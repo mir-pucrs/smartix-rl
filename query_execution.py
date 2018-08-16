@@ -1,12 +1,8 @@
 import mysql.connector
-import pandas as pd
 
-#cnx = mysql.connector.connect(user='pneuhaus@sap-server.local', password='dbuser',
-#                              host='10.32.157.150',
-#                              database='tpch1g')
 
 cnx = mysql.connector.connect(host='10.32.157.150', port=3306,
-                              user='pneuhaus', passwd='dbuser', db='tpch1g')
+                              user='dbuser', passwd='dbuser', db='tpch1g')
 
 
 cursor1 = cnx.cursor(buffered=True)
