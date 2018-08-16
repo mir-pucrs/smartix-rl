@@ -26,7 +26,7 @@ def main():
     # for data in cursor:
     #     print(data)
 
-    executeScriptsFromFile(cursor, '/home/priscillaneuhaus/PycharmProjects/sap_project/teste.sql')
+    executeScriptsFromFile(cursor, 'path-to-file')
     # cnx.commit()
     # cursor.close()
     cnx.close()
