@@ -1,8 +1,8 @@
 import mysql.connector
 
 
-cnx = mysql.connector.connect(host='10.32.157.150', port=3306,
-                              user='dbuser', passwd='dbuser', db='tpch1g')
+cnx = mysql.connector.connect(host='IP-server', port=3306,
+                              user='user-name', passwd='database-password', db='database-name')
 
 
 cursor1 = cnx.cursor(buffered=True)
