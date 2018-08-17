@@ -1,16 +1,23 @@
+import os
 import mysql.connector
-
+import subprocess
 
 
 cnx = mysql.connector.connect(host='sap-server.local',
                               user='dbuser', passwd='dbuser', db='tpch1g')
 
 
+cursor = cnx.cursor(buffered=True)
 cursor1 = cnx.cursor(buffered=True)
 cursor2 = cnx.cursor(buffered=True)
 cursor3 = cnx.cursor(buffered=True)
 cursor4 = cnx.cursor(buffered=True)
 cursor5 = cnx.cursor(buffered=True)
+
+def generate_dbgen_file():
+    os.chdir('TPCH/dbgen')
+    res = subprocess.call('./generatedbgen.sh')
+    print(res)
 
 
 set_profiling = "SET profiling=1"
@@ -63,14 +70,30 @@ show_profiles = "SHOW PROFILES"
 
 #IMPLEMENTAR FUNCTION QUE ENCHE BUFFER
 
-cursor1.execute(set_profiling)
-cursor2.execute(query)
-cursor3.execute(query2)
-cursor4.execute(query3)
-cursor5.execute(show_profiles)
+def refresh_function():
+    #implementar depois que gerar dados com o dbgen
+    generate_dbgen_file()
+    load_data = "LOAD DATA INFILE 'orders_update.txt' INTO TABLE orders;"
 
 
-for (t) in cursor5:
-    print("Query ID: ", t[0], "| Duração: ", t[1])
+def show_time_execution():
+    for (t) in cursor5:
+        print("Query ID: ", t[0], "| Duração: ", t[1])
+
+def main():
+    cursor.execute(set_profiling)
+    cursor1.execute(refresh_function())
+    cursor2.execute(query)
+    cursor3.execute(query2)
+    cursor4.execute(query3)
+    cursor5.execute(show_profiles)
+    show_time_execution()
+    cnx.close()
+    #calc_throughput(S, t, sf)
+
+
+if __name__ == '__main__':
+    main()
+
 
 
