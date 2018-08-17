@@ -1,8 +1,9 @@
 import mysql.connector
 
 
-cnx = mysql.connector.connect(host='IP-server', port=3306,
-                              user='user-name', passwd='database-password', db='database-name')
+
+cnx = mysql.connector.connect(host='sap-server.local',
+                              user='dbuser', passwd='dbuser', db='tpch1g')
 
 
 cursor1 = cnx.cursor(buffered=True)
