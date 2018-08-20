@@ -3,8 +3,15 @@ import mysql.connector
 import subprocess
 
 
+class Query:
+
+    def __init__(self):
+        self.res_time_execution = {}
+        self.temp_val = 0
+
+
 cnx = mysql.connector.connect(host='sap-server.local',
-                              user='dbuser', passwd='dbuser', db='tpch1g')
+                              user='dbuser', passwd='dbuser', db='tpch')
 
 
 cursor = cnx.cursor(buffered=True)
@@ -14,10 +21,10 @@ cursor3 = cnx.cursor(buffered=True)
 cursor4 = cnx.cursor(buffered=True)
 cursor5 = cnx.cursor(buffered=True)
 
+
 def generate_dbgen_file():
     os.chdir('TPCH/dbgen')
     res = subprocess.call('./generatedbgen.sh')
-    print(res)
 
 
 set_profiling = "SET profiling=1"
@@ -64,11 +71,11 @@ query3 = ("SELECT l_orderkey, "
 "order by revenue desc, o_orderdate " )
 
 
-
-
 show_profiles = "SHOW PROFILES"
 
+
 #IMPLEMENTAR FUNCTION QUE ENCHE BUFFER
+
 
 def refresh_function():
     #implementar depois que gerar dados com o dbgen
@@ -76,9 +83,30 @@ def refresh_function():
     load_data = "LOAD DATA INFILE 'orders_update.txt' INTO TABLE orders;"
 
 
+def add_time_execution():
+    i = 0
+    global res_time_execution
+    res_time_execution = cursor5.fetchall()
+    d = dict()
+    for row in res_time_execution:
+        d[row[0]] = row[1]
+    res_time_execution = d
+    print(res_time_execution)
+
+
 def show_time_execution():
-    for (t) in cursor5:
-        print("Query ID: ", t[0], "| Duração: ", t[1])
+    i = 0
+
+
+def calc_throughput():
+    stream = 2
+    global temp_val
+    temp_val = sum(res_time_execution.values())
+    print(res_time_execution.values())
+    print("Tempo total de execução: ", temp_val)
+    total = ((stream * 22) / temp_val) * 3600 * 1
+    print(total)
+
 
 def main():
     cursor.execute(set_profiling)
@@ -88,8 +116,9 @@ def main():
     cursor4.execute(query3)
     cursor5.execute(show_profiles)
     show_time_execution()
+    add_time_execution()
+    calc_throughput()
     cnx.close()
-    #calc_throughput(S, t, sf)
 
 
 if __name__ == '__main__':
