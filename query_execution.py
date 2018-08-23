@@ -8,7 +8,6 @@ class Query:
 
     def __init__(self):
         self.res_time_execution = {}
-        self.temp_val = 0
 
 
 cnx = mysql.connector.connect(host='sap-server.local',
@@ -87,9 +86,6 @@ query2 = ("select sum(l_extendedprice * l_discount) as revenue "
 show_profiles = "SHOW PROFILES"
 
 
-#IMPLEMENTAR FUNCTION QUE ENCHE BUFFER
-
-
 def refresh_function():
     #implementar depois que gerar dados com o dbgen
     generate_dbgen_file()
@@ -103,26 +99,10 @@ def comp_time_execution():
     for row in res_time_execution:
         d[row[0]] = row[1]
     res_time_execution = d
-    print(res_time_execution)
+    return res_time_execution
 
 
-def calc_throughput():
-    stream = 2
-    global temp_val
-    temp_val = sum(res_time_execution.values())
-    print(res_time_execution.values())
-    print("Tempo total de execução: ", temp_val)
-    total = ((stream * 2) / temp_val) * 3600 * 1
-    print("Throughput ", total)
-
-
-#def run_queries_in_parallel():
-#    cursor2.execute(query)
-#    cursor3.execute(query2)
-#    cursor4.execute(query3)
-
-
-def main():
+def run_functions():
     cursor.execute(set_profiling)
     cursor1.execute(refresh_function())
     drop_caches()
@@ -136,13 +116,13 @@ def main():
     # cursor3.execute(query2)
     # cursor4.execute(query3)
     cursor5.execute(show_profiles)
-    comp_time_execution()
-    calc_throughput()
     cnx.close()
 
 
-if __name__ == '__main__':
-    main()
+# O QUE FALTA:
+# 1.IMPLEMENTAR FUNCTION QUE ENCHE BUFFER
+# 2. INCLUIR QUERIES DO POWER SIZE
+# 3. RL ALGORITMO - AGENTE
 
 
 
