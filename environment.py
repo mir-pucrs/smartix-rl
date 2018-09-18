@@ -19,8 +19,6 @@ class Environment:
             self.show_indexes[i] = d[i][0], d[i][2], d[i][3], d[i][4], d[i][10]
             aux[i] = d[i][4]
         self.indexes = list(aux.values())
-        print('show_indexes', self.show_indexes)
-        print('indexes', self.indexes)
         return self.indexes
 
     def add_index(self, column):
