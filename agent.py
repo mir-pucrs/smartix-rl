@@ -3,7 +3,7 @@ import glob
 import mysql.connector
 import re
 import numpy as np
-import random
+from state import State
 from environment import Environment
 
 
@@ -14,11 +14,13 @@ class Agent:
         self.q_table = dict()
         self.columns_of_table = list()
         self.columns_of_queries = list()
+        self.map_indexes = list()
         self.utility_table = {}
+        self.state = State()
         self.env = Environment()
 
     def reset(self):
-        self.s = self.env.get_indexes()
+        self.s = self.state.get_indexes()
         return self.s
 
     def get_columns_of_table(self):
@@ -39,6 +41,12 @@ class Agent:
                 content = re.findall(r'l_[a-z]+', f.read())
                 self.columns_of_queries += content
         return self.columns_of_queries
+
+    def reset_map_indexes(self):
+        size = self.get_columns_of_table()
+        for i in range(len(size)):
+            self.map_indexes.append(0)
+        print(self.map_indexes)
 
     def train(self):
         executions = 0
