@@ -34,6 +34,12 @@ class Environment:
         command = ('DROP INDEX %s ON lineitem;' % str(index))
         cursor.execute(command)
 
+    def execute(self, action):
+        # if the agent is at state bla do bla
+        """
+        TODO: implement function to return state and state_reward
+        """
+
     def run_benchmark(self):
         """
         TODO: implement function to run benchmark
