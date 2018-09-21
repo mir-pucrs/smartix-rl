@@ -1,6 +1,8 @@
 from throughput import Throughput
 from power_size import PowerSize
 from environment import Environment
+from state import State
+from action import Action
 from agent import Agent
 
 
@@ -10,10 +12,12 @@ class Metrics:
         self.temp_val = 0
         self.geoMean = 0
         self.powerSize = 0
+        self.state = State()
         self.env = Environment()
         self.tput = Throughput()
         self.powerSize = PowerSize()
         self.agent = Agent()
+        self.action = Action()
 
     def calc_throughput(self):
         stream = 2
@@ -25,7 +29,7 @@ class Metrics:
         print("Throughput ", total)
 
     def get_current_state(self):
-        current_state = self.env.get_indexes()
+        current_state = self.state.get_indexes()
         print(current_state)
 
     def calc_power_size(self):
@@ -43,12 +47,13 @@ class Metrics:
         # self.powerSize.run_functions()
         # self.calc_throughput()
         # self.calc_power_size()
-        # self.env.get_indexes()
-        # self.env.add_index('l_suppkey')
-        # self.env.drop_index('index6')
+        # self.state.get_indexes()
+        # self.action.add_index('l_comment')
+        # self.action.drop_index('index1')
         # self.agent.reset()
         # self.agent.get_columns_of_queries()
-        self.agent.train()
+        self.agent.reset_map_indexes()
+        # self.agent.train()
 
 
 if __name__ == '__main__':
