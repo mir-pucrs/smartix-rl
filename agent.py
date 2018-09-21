@@ -47,6 +47,7 @@ class Agent:
         for i in range(len(size)):
             self.map_indexes.append(0)
         print(self.map_indexes)
+        return self.map_indexes
 
     def train(self):
         executions = 0
