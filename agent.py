@@ -14,7 +14,6 @@ class Agent:
         self.q_table = dict()
         self.columns_of_table = list()
         self.columns_of_queries = list()
-        self.map_indexes = list()
         self.utility_table = {}
         self.state = State()
         self.env = Environment()
@@ -23,36 +22,10 @@ class Agent:
         self.s = self.state.get_indexes()
         return self.s
 
-    def get_columns_of_table(self):
-        cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
-        cursor = cnx.cursor(buffered=True)
-        cursor.execute('SHOW COLUMNS FROM lineitem;')
-        d = cursor.fetchall()
-        aux = dict()
-        for i in range(0, len(d)):
-            aux[i] = d[i][0]
-        self.columns_of_table = list(aux.values())
-        return self.columns_of_table
-
-    def get_columns_of_queries(self):
-        filepaths = glob.glob('/home/priscillaneuhaus/SAP-Project/TPCH/2.17.3/dbgen/queries/*.sql')
-        for file in filepaths:
-            with open(file, 'r') as f:
-                content = re.findall(r'l_[a-z]+', f.read())
-                self.columns_of_queries += content
-        return self.columns_of_queries
-
-    def reset_map_indexes(self):
-        size = self.get_columns_of_table()
-        for i in range(len(size)):
-            self.map_indexes.append(0)
-        print(self.map_indexes)
-        return self.map_indexes
-
     def train(self):
         executions = 0
-        self.columns_of_table = self.get_columns_of_table()
-        self.columns_of_queries = self.get_columns_of_queries()
+        self.columns_of_table = self.state.get_columns_of_table()
+        self.columns_of_queries = self.state.get_columns_of_queries()
         self.q_table = np.zeros((len(self.columns_of_table), len(self.columns_of_queries)))
         for e in range(executions):
             self.prev_s = self.reset()
