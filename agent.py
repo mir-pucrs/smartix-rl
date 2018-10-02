@@ -5,6 +5,7 @@ import re
 import numpy as np
 from state import State
 from environment import Environment
+from q_value import Q_Value
 
 
 class Agent:
@@ -17,16 +18,42 @@ class Agent:
         self.utility_table = {}
         self.state = State()
         self.env = Environment()
+        self.frequency = dict()
 
     def reset(self):
         self.s = self.state.get_indexes()
         return self.s
 
+
+    def f(self, qv):
+        if qv in self.frequency:
+            return 0 #self.q_values[qv]
+        else:
+            return 9999999
+
+    def argmax(self,state):
+        v = -9999999
+        pa = None
+        for a in self.env.available_actions(state):
+            qv = Q_Value(state, a)
+            value = self.f(qv)
+            if value > v:
+                v = value
+                pa = a
+        return pa
+
+    def get_action(self, state): 
+        a = self.argmax(state)
+        self.frequency[Q_Value(state, a)] = 1
+        return a
+
     def train(self):
         executions = 0
         self.columns_of_table = self.state.get_columns_of_table()
         self.columns_of_queries = self.state.get_columns_of_queries()
+
         self.q_table = np.zeros((len(self.columns_of_table), len(self.columns_of_queries)))
+
         for e in range(executions):
             self.prev_s = self.reset()
             done = False
