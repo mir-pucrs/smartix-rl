@@ -1,22 +1,37 @@
 import mysql.connector
-from agent import Agent
+# from agent import Agent
 from state import State
 import os
 
 
 class Action:
 
-    def __init__(self):
+    def __init__(self, name, type):
         self.current_state = dict()
-        self.agent = Agent()
+        self.name = name
+        self.type = type
+        # self.agent = Agent()
         self.state = State()
         self.map_indexes = self.state.reset_map_indexes()
+
+    def __repr__(self):
+        return str(self.name) + ',' + str(self.type)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def execute(self):
+        if self.type == 'DROP':
+            self.drop_index(self.name)
+        else:
+            self.add_index(self.name)
 
     def drop_index(self, index):
         cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
         cursor = cnx.cursor(buffered=True)
         command = ('DROP INDEX %s ON lineitem;' % str(index))
         cursor.execute(command)
+        cnx.close()
 
     def add_index(self, column):
         cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
@@ -32,11 +47,6 @@ class Action:
             print(name)
             with open('../name_of_indexes', 'w') as fout:
                 fout.writelines(name)
+        cnx.close()
 
-    # def add_index_first(self, column):
-    #     cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
-    #     cursor = cnx.cursor(buffered=True)
-    #     for line in open('../name_of_indexes'):
-    #         command = ('CREATE INDEX %s ON lineitem (%s);\n' % (line.replace('\n', ''), column))
-    #         cursor.execute(command)
 
