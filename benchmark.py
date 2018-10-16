@@ -7,8 +7,7 @@ class Benchmark:
     def __init__(self, benchmark = "TPCH"):
         self.benchmark = benchmark
 
-    def run(self, benchmark):
-
+    def run(self):
         if (self.benchmark == "TPCH"):
             results = TPCH().run()
         else:

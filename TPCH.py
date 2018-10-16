@@ -14,15 +14,15 @@ class TPCH:
         SCALE_FACTOR    1   10  30  100
         NUM_STREAMS     2   3   4   5
     '''
-    SCALE_FACTOR = 1
-    NUM_STREAMS = 2
+    SCALE_FACTOR = 100
+    NUM_STREAMS = 5
 
 
     '''
         Global configuration
     '''
-    DB_CONFIG = {'user': 'root', 'password': 'root', 'host': 'localhost', 'database': 'tpch'}
-    REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-qsrf/RefreshFiles'
+    DB_CONFIG = {'user': 'dbuser', 'password': 'dbuser', 'host': 'sap-server', 'database': 'tpch100g'}
+    REFRESH_FILES_PATH = '/home/glicks/tpch-tools/dbgen'
 
 
     '''
@@ -82,11 +82,13 @@ class TPCH:
         cursor.execute("SET PROFILING = 1")
         cursor.callproc("INSERT_REFRESH_FUNCTION")
         cursor.execute("SHOW PROFILES")
+        results = cursor.fetchall()
         conn.close()
 
         # SUM AND RETURN TOTAL EXECUTION TIME FROM FETCHED RESULTS
         duration = 0
-        for row in cursor.fetchall(): duration += row[1]
+        for row in results: 
+            duration += row[1]
         return duration
 
     def __delete_refresh_function(self):
@@ -96,11 +98,13 @@ class TPCH:
         cursor.execute("SET PROFILING = 1")
         cursor.callproc("DELETE_REFRESH_FUNCTION")
         cursor.execute("SHOW PROFILES")
+        results = cursor.fetchall()
         conn.close()
         
         # SUM AND RETURN TOTAL EXECUTION TIME FROM FETCHED RESULTS
         duration = 0
-        for row in cursor.fetchall(): duration += row[1]
+        for row in results: 
+            duration += row[1]
         return duration
 
 
@@ -113,15 +117,15 @@ class TPCH:
 
         # RUNS A NUMBER OF REFRESH STREAMS ACCORDING TO SCALE FACTOR
         for i in range(self.NUM_STREAMS):
-            print("\n*** Loading refresh stream data... (RS%d)" % i)
+            # print("\n*** Loading refresh stream data... (RS%d)" % i)
             self.__load_refresh_stream_data()
             print("*** Start insert refresh function (RS%d)" % i)
             refresh_streams_duration.append(self.__insert_refresh_function())
             print("*** Start delete refresh function (RS%d)" % i)
             refresh_streams_duration.append(self.__delete_refresh_function())
 
-        print("\n*** Refresh streams finished")
-        print("*** Refresh streams duration:", refresh_streams_duration)
+        # print("\n*** Refresh streams finished")
+        # print("*** Refresh streams duration:", refresh_streams_duration)
         
         # RETURNS TOTAL REFRESH STREAMS EXECUTION TIME
         results_queue.put(refresh_streams_duration)
@@ -165,7 +169,7 @@ class TPCH:
     '''
     def __run_power_test(self):
         # LOAD REFRESH STREAM DATA
-        print("\n*** Loading refresh stream data...")
+        # print("\n*** Loading refresh stream data...")
         self.__load_refresh_stream_data()
 
         # INSERT REFRESH FUNCTION
@@ -193,7 +197,7 @@ class TPCH:
         power = (3600 / geo_mean) * self.SCALE_FACTOR
 
         print("\n*** Power test execution profiles:", power_test_profiles)
-        print("*** Geometric mean:", geo_mean)
+        # print("*** Geometric mean:", geo_mean)
 
         # RETURN POWER@SIZE METRIC
         return power
@@ -247,15 +251,15 @@ class TPCH:
         power = self.__run_power_test()
 
         # RUN THROUGHPUT
-        print("\n\n\n*** STARTING THROUGHPUT TEST...")
+        print("\n*** STARTING THROUGHPUT TEST...")
         throughput = self.__run_throughput_test()
 
         # RUN THROUGHPUT
-        print("\n\n\n*** CALCULATING QPHH...")
+        print("\n*** CALCULATING QPHH...")
         qphh = math.sqrt(power * throughput)
 
         # SHOW RESULTING METRICS
-        print("\n\n\n*** RESULTING METRICS:\n")
+        print("\n*** RESULTING METRICS:\n")
         print("Power@Size =", power)
         print("Throughput@Size =", throughput)
         print("QphH@Size =", qphh)
@@ -267,9 +271,11 @@ class TPCH:
         self.__set_refresh_stream_number()
 
         # PUT METRICS INTO AN ARRAY AND RETURN
-        results = []
-        results.append(power)
-        results.append(throughput)
-        results.append(qphh)
+        # results = []
+        # results.append(power)
+        # results.append(throughput)
+        # results.append(qphh)
 
-        return results
+        # return results
+
+        return qphh

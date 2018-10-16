@@ -1,42 +1,35 @@
-import mysql.connector
-from agent import Agent
-from state import State
-import os
+from database import Database
 
 
 class Action:
 
-    def __init__(self):
-        self.current_state = dict()
-        self.agent = Agent()
-        self.state = State()
-        self.map_indexes = self.state.reset_map_indexes()
 
-    def drop_index(self, index):
-        cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
-        cursor = cnx.cursor(buffered=True)
-        command = ('DROP INDEX %s ON lineitem;' % str(index))
-        cursor.execute(command)
+    def __init__(self, column, type):
+        # Database instance
+        self.db = Database()
 
-    def add_index(self, column):
-        cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
-        cursor = cnx.cursor(buffered=True)
-        with open('../name_of_indexes', 'r') as fin:
-            data = fin.readline().strip()
-            i = data[5]
-            index_numb = int(i)
-            command = 'CREATE INDEX %s ON lineitem (%s);' % (data, column)
-            cursor.execute(command)
-            index_numb += 1
-            name = 'index' + str(index_numb)
-            print(name)
-            with open('../name_of_indexes', 'w') as fout:
-                fout.writelines(name)
+        # Action attributes
+        self.table = "lineitem"
+        self.column = column
+        self.type = type
 
-    # def add_index_first(self, column):
-    #     cnx = mysql.connector.connect(host='127.0.0.1', user='root', passwd='teste', db='tpch')
-    #     cursor = cnx.cursor(buffered=True)
-    #     for line in open('../name_of_indexes'):
-    #         command = ('CREATE INDEX %s ON lineitem (%s);\n' % (line.replace('\n', ''), column))
-    #         cursor.execute(command)
 
+    def __repr__(self):
+        return str(self.column) + ',' + str(self.type)
+
+
+    def __hash__(self):
+        return hash(str(self))
+
+
+    def execute(self):
+        if self.type == 'DROP':
+            self.db.drop_index(self.column, self.table)
+        elif self.type == 'CREATE':
+            self.db.create_index(self.column, self.table)
+
+
+
+if __name__ == "__main__":
+    action = Action("l_shipmode", "CREATE")
+    action.execute()

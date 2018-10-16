@@ -1,74 +1,165 @@
-import math
-import glob
-import mysql.connector
-import re
-import numpy as np
-from state import State
-from environment import Environment
+from database import Database
 from q_value import Q_Value
+from state import State
+
+import random
 
 
 class Agent:
 
+
+    MAX_TRAINING_EPISODES = 25 # TRY 100
+
+
     def __init__(self):
-        self.s = self.a = self.r = self.prev_s = self.prev_a = self.prev_r = None
-        self.q_table = dict()
-        self.columns_of_table = list()
-        self.columns_of_queries = list()
-        self.utility_table = {}
-        self.state = State()
-        self.env = Environment()
+        # Agent attributes
+        self.state = None
+        self.reward = None
+        self.action = None
+        self.p_state = None
+        self.p_reward = None
+        self.p_action = None
+        
+        self.alpha = 0.9 # Learning rate
+        self.gamma = 0.9 # Discount factor
+        self.epsilon = 0.5 # Epsilon-greedy value
+
+        self.r_plus = 9999
+        self.exploration = 1
+
+        self.q_values = dict()
         self.frequency = dict()
 
-    def reset(self):
-        self.s = self.state.get_indexes()
-        return self.s
 
 
     def f(self, qv):
-        if qv in self.frequency:
-            return 0 #self.q_values[qv]
+        if qv in self.q_values and self.frequency[qv] >= self.exploration:
+            return self.q_values[qv]
         else:
-            return 9999999
+            return self.r_plus
 
-    def argmax(self,state):
-        v = -9999999
-        pa = None
-        for a in self.env.available_actions(state):
-            qv = Q_Value(state, a)
-            value = self.f(qv)
-            if value > v:
-                v = value
-                pa = a
-        return pa
 
-    def get_action(self, state): 
-        a = self.argmax(state)
-        self.frequency[Q_Value(state, a)] = 1
+
+    def argmax_a(self, state):
+        a = None
+        max_value = float('-inf')
+        
+        if state == None:
+            return a
+
+        for action in self.env.get_available_actions(state):
+            qv = Q_Value(state, action)
+            f_value = self.f(qv)
+            if f_value > max_value:
+                max_value = f_value
+                a = action
+
         return a
 
-    def train(self):
-        executions = 0
-        self.columns_of_table = self.state.get_columns_of_table()
-        self.columns_of_queries = self.state.get_columns_of_queries()
 
-        self.q_table = np.zeros((len(self.columns_of_table), len(self.columns_of_queries)))
 
-        for e in range(executions):
-            self.prev_s = self.reset()
-            done = False
-            while not done:
-                if np.sum(self.q_table[self.prev_s, :]) == 0:
-                    # if q_table empty then choose random action
-                    self.a = np.random.randint(0, 2)
-                    # self.s = random.choice(self.columns_of_queries)
-                else:
-                    # else select the action with highest cumulative reward
-                    self.a = np.argmax(self.q_table[self.prev_s, :])
-                self.s, self.r, done, _ = self.env.execute(self.a)
-                self.q_table[self.prev_s, self.a] += self.r
-                self.prev_s = self.s
-                # self.env.add_index(self.s)
-                # self.s = self.env.get_indexes()
-        print('testing numpy zeros:', self.q_table)
-        return self.q_table
+    def max_a(self, state):
+        max_value = float('-inf')
+
+        for action in self.env.get_available_actions(state):
+            qv = Q_Value(state, action)
+            if qv in self.q_values:
+                q_sa = self.q_values[qv]
+                if q_sa > max_value:
+                    max_value = q_sa
+
+        if max_value == float('-inf'): 
+            max_value = 0.0
+        
+        return max_value
+
+
+
+    def get_random_action(self, state):
+        return random.choice(self.env.get_available_actions(state))
+
+
+
+    def get_action(self, state):
+        # Get reward for current state
+        reward_prime = self.env.get_reward(state)
+        print("Reward prime:", reward_prime)
+        
+        if self.p_state != None:
+            # Adjust table frequencies and zero new Q-Values
+            if Q_Value(self.p_state, self.p_action) in self.frequency and self.frequency[Q_Value(self.p_state, self.p_action)] > 0:
+                print("Already executed this Q(s,a), increment 1 in frequency")
+                self.frequency[Q_Value(self.p_state, self.p_action)] += 1
+            else:
+                print("Never executed this Q(s,a), zero Q-Value and 1 to frequency")
+                self.frequency[Q_Value(self.p_state, self.p_action)] = 1
+                self.q_values[Q_Value(self.p_state, self.p_action)] = 0
+
+            # Bellman equation
+            q_sa = self.q_values[Q_Value(self.p_state, self.p_action)]
+            self.q_values[Q_Value(self.p_state, self.p_action)] = q_sa + self.alpha * (self.p_reward + self.gamma * self.max_a(state) - q_sa)
+            print("Calculated Bellman equation")
+        
+        # Update previous state and reward
+        self.p_state = state
+        self.p_reward = reward_prime
+
+        # Epsilon-greedily choose action
+        rand = random.random()
+        if rand > self.epsilon: # EXPLOIT
+            print("Random %.2f > %.2f Epsilon" % (rand, self.epsilon))
+            self.p_action = self.argmax_a(self.p_state)
+            print("Argmax action:", self.p_action)
+        else: # EXPLORE
+            print("Random %.2f < %.2f Epsilon" % (rand, self.epsilon))
+            self.p_action = self.get_random_action(self.p_state)
+            print("Random action:", self.p_action)
+
+        # Return chosen action
+        return self.p_action
+
+
+
+    def train(self, env):
+        # Get and reset environment
+        self.env = env
+        self.env.reset()
+
+        # Episodes loop
+        episode = 0
+        while episode < self.MAX_TRAINING_EPISODES:
+
+            # Runs for each episode
+            for execution in range(100):
+
+                print("\n\nEP. #%d | EXEC. #%d" % (episode, execution))
+
+                # Get state, action and execute action in the environment
+                self.state = State()
+                self.action = self.get_action(self.state)
+                self.env.execute(self.action)
+                
+                # Write Q-Tables to file
+                with open('data/qtfr.txt', 'w+') as f:
+                    f.write(repr(self.q_values) + '\n\n')
+
+                # If episode's last execution
+                if execution == 99:
+                    # Save current state-rewards and plot graphics
+                    self.env.post_episode(self.q_values, episode)
+
+                    # Decrease epsilon value by half
+                    self.epsilon = self.epsilon / 2
+
+                    # Reset attributes and environment
+                    self.p_state = None
+                    self.p_action = None
+                    self.p_reward = None
+                    self.state = None
+                    self.action = None
+                    self.reward = None
+                    self.env.reset()
+
+                    # Loop management
+                    episode += 1
+                    break
