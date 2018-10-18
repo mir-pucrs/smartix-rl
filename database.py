@@ -8,7 +8,7 @@ class Database:
 
 
     def __init__(self):
-        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=sap-server;DATABASE=tpch100g;UID=dbuser;PWD=dbuser'
+        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=root;PWD=root'
         # self.conn = pyodbc.connect(self.connection_string)
         # self.cur = self.conn.cursor()
 

@@ -14,15 +14,15 @@ class TPCH:
         SCALE_FACTOR    1   10  30  100
         NUM_STREAMS     2   3   4   5
     '''
-    SCALE_FACTOR = 100
-    NUM_STREAMS = 5
+    SCALE_FACTOR = 1
+    NUM_STREAMS = 2
 
 
     '''
         Global configuration
     '''
-    DB_CONFIG = {'user': 'dbuser', 'password': 'dbuser', 'host': 'sap-server', 'database': 'tpch100g'}
-    REFRESH_FILES_PATH = '/home/glicks/tpch-tools/dbgen'
+    DB_CONFIG = {'user': 'root', 'password': 'root', 'host': '127.0.0.1', 'database': 'tpch'}
+    REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-tools/dbgen'
 
 
     '''

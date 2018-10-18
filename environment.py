@@ -24,8 +24,8 @@ class Environment:
         self.rewards = dict()
 
         # State-rewards file records to dict
-        # self.rewards_archive = self.load_rewards_archive()
-        self.rewards_archive = dict()
+        self.rewards_archive = self.load_rewards_archive()
+        # self.rewards_archive = dict()
 
 
 
@@ -48,15 +48,15 @@ class Environment:
 
 
     def get_reward(self, state):
-        # if repr(state) in self.rewards_archive.keys():
-        #     self.rewards[state] = self.rewards_archive[repr(state)]
-        #     print("State-reward in dictionary!")
-        # else:
-        #     self.rewards[state] = self.benchmark.run()
-        #     self.rewards_archive[repr(state)] = self.rewards[state]
-        #     print("State-reward not in dictionary")
+        if repr(state) in self.rewards_archive.keys():
+            print("State-reward in dictionary!")
+            self.rewards[state] = self.rewards_archive[repr(state)]
+        else:
+            print("State-reward not in dictionary")
+            self.rewards[state] = self.benchmark.run()
+            self.rewards_archive[repr(state)] = self.rewards[state]
         
-        self.rewards[state] = self.benchmark.run()
+        # self.rewards[state] = self.benchmark.run()
 
         # print("\n\nSTATE IS:\n\n",state,"\n\n")
         with open('data/srrf.txt', 'w+') as f:

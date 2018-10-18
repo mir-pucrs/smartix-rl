@@ -30,6 +30,7 @@ class Agent:
         self.q_values = dict()
         self.frequency = dict()
 
+        self.weights = list()
 
 
     def f(self, qv):
@@ -86,6 +87,22 @@ class Agent:
         print("Reward prime:", reward_prime)
         
         if self.p_state != None:
+            # Calculate predicted q_sa
+            features = state.get_features()
+            predicted_q = 0
+            for i in range(len(self.weights)):
+                predicted_q += features[i] * self.weights[i]
+
+            print("\n\nPrevious weights:", self.weights)
+
+            print("\n\nPredicted Q_sa:", predicted_q)
+            
+            # Adjust weights according to actual reward
+            for i in range(len(self.weights)):
+                self.weights[i] = self.weights[i] + self.alpha * (self.p_reward + self.gamma * self.max_a(state) - predicted_q) # * derivadas!!!
+
+            print("\n\nUpdated weights:", self.weights)
+
             # Adjust table frequencies and zero new Q-Values
             if Q_Value(self.p_state, self.p_action) in self.frequency and self.frequency[Q_Value(self.p_state, self.p_action)] > 0:
                 print("Already executed this Q(s,a), increment 1 in frequency")
@@ -125,12 +142,17 @@ class Agent:
         self.env = env
         self.env.reset()
 
+        # Initialize weights vector with random numbers
+        self.weights.append(1.0) # First element is bias
+        for _ in range(len(State().indexes_map)):
+            self.weights.append(random.random())
+
         # Episodes loop
         episode = 0
         while episode < self.MAX_TRAINING_EPISODES:
 
             # Runs for each episode
-            for execution in range(100):
+            for execution in range(2):
 
                 print("\n\nEP. #%d | EXEC. #%d" % (episode, execution))
 
@@ -144,7 +166,7 @@ class Agent:
                     f.write(repr(self.q_values) + '\n\n')
 
                 # If episode's last execution
-                if execution == 99:
+                if execution == 1:
                     # Save current state-rewards and plot graphics
                     self.env.post_episode(self.q_values, episode)
 
