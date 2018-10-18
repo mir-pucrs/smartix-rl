@@ -52,7 +52,7 @@ class TPCH:
         Loads data from refresh files to temporary tables in the database
     '''
     def __load_refresh_stream_data(self):
-        print("*** Load refresh stream number:", self.refresh_stream_number)
+        # print("*** Load refresh stream number:", self.refresh_stream_number)
 
         # STRINGS TO BE EXECUTED BY CURSOR
         delete = "load data local infile '{}/delete.{}' into table rfdelete fields terminated by '|' lines terminated by '\n';".format(self.REFRESH_FILES_PATH, self.refresh_stream_number)
@@ -119,9 +119,9 @@ class TPCH:
         for i in range(self.NUM_STREAMS):
             # print("\n*** Loading refresh stream data... (RS%d)" % i)
             self.__load_refresh_stream_data()
-            print("*** Start insert refresh function (RS%d)" % i)
+            # print("*** Start insert refresh function (RS%d)" % i)
             refresh_streams_duration.append(self.__insert_refresh_function())
-            print("*** Start delete refresh function (RS%d)" % i)
+            # print("*** Start delete refresh function (RS%d)" % i)
             refresh_streams_duration.append(self.__delete_refresh_function())
 
         # print("\n*** Refresh streams finished")
@@ -173,19 +173,19 @@ class TPCH:
         self.__load_refresh_stream_data()
 
         # INSERT REFRESH FUNCTION
-        print("\n*** Start insert refresh function")
+        # print("\n*** Start insert refresh function")
         insert_refresh_profile = self.__insert_refresh_function()
-        print("*** Insert RF duration:", insert_refresh_profile)
+        # print("*** Insert RF duration:", insert_refresh_profile)
 
         # RUN QUERY STREAM
-        print("\n*** Start query stream")
+        # print("\n*** Start query stream")
         query_stream_profiles = self.__run_query_stream(Queue())
-        print("*** Query stream duration:", sum(query_stream_profiles.values()))
+        # print("*** Query stream duration:", sum(query_stream_profiles.values()))
         
         # DELETE REFRESH FUNCTION
-        print("\n*** Start delete refresh function")
+        # print("\n*** Start delete refresh function")
         delete_refresh_profile = self.__delete_refresh_function()
-        print("*** Delete RF duration:", delete_refresh_profile)
+        # print("*** Delete RF duration:", delete_refresh_profile)
 
         # CREATES LIST OF DURATIONS OF THE 22 QUERIES AND REFRESH FUNCTIONS
         power_test_profiles = list(query_stream_profiles.values())
@@ -196,7 +196,7 @@ class TPCH:
         geo_mean = stats.gmean(power_test_profiles)
         power = (3600 / geo_mean) * self.SCALE_FACTOR
 
-        print("\n*** Power test execution profiles:", power_test_profiles)
+        # print("\n*** Power test execution profiles:", power_test_profiles)
         # print("*** Geometric mean:", geo_mean)
 
         # RETURN POWER@SIZE METRIC
@@ -208,7 +208,7 @@ class TPCH:
     '''
     def __run_throughput_test(self):
         # DECLARING PROCESSES
-        print("\n*** Declaring processes...")
+        # print("\n*** Declaring processes...")
         results_queue = Queue()
         throughput_test_profiles = []
         streams = []
@@ -220,49 +220,52 @@ class TPCH:
         start_time = time.time()
 
         # START PROCESSES
-        print("*** Starting processes...")
+        # print("*** Starting processes...")
         for p in streams:
             p.start()
 
-        print("*** Getting results...")
+        # print("*** Getting results...")
         for p in streams:
             throughput_test_profiles.append(results_queue.get())
 
         # JOIN PROCESSES
-        print("*** Joining processes...")
+        # print("*** Joining processes...")
         for p in streams:
             p.join()
 
-        print("\n*** Throughput test execution profiles:", throughput_test_profiles)
+        # print("\n*** Throughput test execution profiles:", throughput_test_profiles)
 
         # FINISH TIMING EXECUTION
         elapsed_time = time.time() - start_time
-        print("\n*** Throughput test elapsed time:", elapsed_time)
+        # print("\n*** Throughput test elapsed time:", elapsed_time)
 
         return ((2 * 22) / elapsed_time) * 3600 * self.SCALE_FACTOR
 
 
     def run(self):
+
+        print("\nStarting benchmark...")
+
         # READ LAST REFRESH STREAM NUMBER
         self.__get_refresh_stream_number()
 
         # RUN POWER@SIZE
-        print("\n*** STARTING POWER TEST...")
+        # print("\n*** STARTING POWER TEST...")
         power = self.__run_power_test()
 
         # RUN THROUGHPUT
-        print("\n*** STARTING THROUGHPUT TEST...")
+        # print("\n*** STARTING THROUGHPUT TEST...")
         throughput = self.__run_throughput_test()
 
         # RUN THROUGHPUT
-        print("\n*** CALCULATING QPHH...")
+        # print("\n*** CALCULATING QPHH...")
         qphh = math.sqrt(power * throughput)
 
         # SHOW RESULTING METRICS
-        print("\n*** RESULTING METRICS:\n")
+        # print("\n*** RESULTING METRICS:\n")
         print("Power@Size =", power)
         print("Throughput@Size =", throughput)
-        print("QphH@Size =", qphh)
+        print("QphH@Size =", qphh, end="\n")
 
         # FIXES BAD PROGRAMMING TECHNIQUE
         self.refresh_stream_number += self.NUM_STREAMS

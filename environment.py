@@ -6,6 +6,7 @@ from agent import Agent
 
 import time
 import json
+from pathlib import Path
 from random import randint
 import PyGnuplot as gp
 
@@ -25,12 +26,14 @@ class Environment:
 
         # State-rewards file records to dict
         self.rewards_archive = self.load_rewards_archive()
-        # self.rewards_archive = dict()
 
 
 
-    def execute(self, action):
+    def step(self, action):
         action.execute()
+        state = State()
+        reward = self.get_reward(state)
+        return state, reward
 
 
 
@@ -49,16 +52,14 @@ class Environment:
 
     def get_reward(self, state):
         if repr(state) in self.rewards_archive.keys():
-            print("State-reward in dictionary!")
             self.rewards[state] = self.rewards_archive[repr(state)]
+            print("State-reward in dictionary!")
         else:
-            print("State-reward not in dictionary")
             self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
-        
-        # self.rewards[state] = self.benchmark.run()
+            print("State-reward not in dictionary")
 
-        # print("\n\nSTATE IS:\n\n",state,"\n\n")
+        # Write state-reward to file
         with open('data/srrf.txt', 'w+') as f:
             f.write(repr(state) + ': ' + str(self.rewards[state]) + '\n')
 
@@ -67,7 +68,8 @@ class Environment:
 
 
     def reset(self):
-        return self.db.reset_indexes()
+        self.db.reset_indexes()
+        return State()
 
 
 
@@ -75,8 +77,12 @@ class Environment:
         Data files and plots
     '''
     def load_rewards_archive(self):
-        with open('data/rewards_archive.json', 'r') as infile:
-            return json.load(infile)
+        rewards_archive = Path("/path/to/file")
+        if rewards_archive.is_file():
+            with open(rewards_archive, 'r') as infile:
+                return json.load(infile)
+        else:
+            return dict()
 
     def dump_rewards_archive(self):
         with open('data/rewards_archive.json', 'w+') as outfile:
