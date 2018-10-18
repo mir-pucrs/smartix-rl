@@ -67,6 +67,23 @@ class Environment:
 
 
 
+    def get_action_space(self, state):
+        action_space = list()
+        for column in state.indexes_map.keys():
+            action_space.append(Action(column, 'CREATE'))
+            action_space.append(Action(column, 'DROP'))
+        return action_space
+
+
+
+    def get_state_features(self, state):
+        state_features = dict()
+        for column in state.indexes_map.keys():
+            state_features[column] = state.indexes_map[column]
+        return state_features
+
+
+
     def reset(self):
         self.db.reset_indexes()
         return State()

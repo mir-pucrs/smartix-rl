@@ -3,7 +3,7 @@ from q_value import Q_Value
 from state import State
 
 import random
-
+import pprint
 
 class Agent:
 
@@ -34,6 +34,8 @@ class Agent:
         self.q_values = dict()
         self.frequency = dict()
 
+        self.action_weights = dict()
+
 
 
     def f(self, qv):
@@ -62,15 +64,13 @@ class Agent:
 
 
 
-    def max_a(self, state):
+    def max_a(self, state, q_values):
         max_value = float('-inf')
 
         for action in self.env.get_available_actions(state):
-            qv = Q_Value(state, action)
-            if qv in self.q_values:
-                q_sa = self.q_values[qv]
-                if q_sa > max_value:
-                    max_value = q_sa
+            q_sa = q_values[action]
+            if q_sa > max_value:
+                max_value = q_sa
 
         if max_value == float('-inf'): 
             max_value = 0.0
@@ -103,10 +103,37 @@ class Agent:
 
 
 
+    def predict_q_values(self, state, action = None):
+        state_features = self.env.get_state_features(state)
+        if not action:
+            prediction = dict()
+            for a in self.action_weights.keys():
+                prediction[a] = 1 # Start with 1 (bias term)
+                for i in range(len(a)):
+                    prediction[a] += self.action_weights[a][i] * state_features[i]
+        else:
+            prediction = 1 # Start with 1 (bias term)
+            for i in range(len(self.action_weights[action])):
+                prediction += self.action_weights[action][i] * state_features[i]
+        return prediction
+
+
+
     def train(self, env):
         # Reset environment
         self.env = env
         self.state = self.env.reset()
+
+        # Initialize features' weights vector
+        features = self.env.get_state_features(self.state)
+        action_space = self.env.get_action_space(self.state)
+        for a in action_space:
+            self.action_weights[a] = dict()
+            for f in features.keys():
+                self.action_weights[a][f] = random.random()
+        
+        # Print weights vector
+        pprint.pprint(self.action_weights, width=2)
 
         # Episodes loop
         for episode in range(self.MAX_TRAINING_EPISODES):
@@ -122,17 +149,13 @@ class Agent:
                 print("Previous action: ", self.p_action)
                 print("Previous reward: ", self.p_reward)
 
-                # Update frequencies and Q-Values
+                # Update frequencies
                 if self.p_state != None:
                     # Update frequencies for state–action pairs
                     if Q_Value(self.p_state, self.p_action) in self.frequency and self.frequency[Q_Value(self.p_state, self.p_action)] > 0:
                         self.frequency[Q_Value(self.p_state, self.p_action)] += 1
                     else:
                         self.frequency[Q_Value(self.p_state, self.p_action)] = 1
-                        self.q_values[Q_Value(self.p_state, self.p_action)] = 0
-                    # Update Q-Value (Bellman equation)
-                    q_sa = self.q_values[Q_Value(self.p_state, self.p_action)]
-                    self.q_values[Q_Value(self.p_state, self.p_action)] = q_sa + self.alpha * (self.p_reward + self.gamma * self.max_a(self.state) - q_sa)
                 
                 # Get action
                 self.action = self.get_action_epsilon_greedy(self.state)
@@ -145,6 +168,17 @@ class Agent:
                 self.state, self.reward = self.env.step(self.action)
                 print("Resulting state: ", self.state)
                 print("Resulting reward: ", self.reward)
+
+                # Predict Q-Value for previous state-action
+                previous_q_sa = self.predict_q_values(self.p_state, self.action)
+                print("Previous Q(s,a):", previous_q_sa)
+
+                # Predict Q-Value for possible actions in next state
+                state_q_values = self.predict_q_values(self.state)
+
+                # Update action weights
+                for i in range(len(self.action_weights[self.action])):
+                    self.action_weights[self.action][i] += self.alpha * (self.reward + self.gamma * self.max_a(self.state, state_q_values) - previous_q_sa) * 10**-5
 
                 # Save previous action and reward
                 self.p_action = self.action
