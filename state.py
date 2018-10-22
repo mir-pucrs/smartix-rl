@@ -19,6 +19,10 @@ class State:
     def __hash__(self):
         return hash(str(self.indexes_map))
 
+    
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 
 
 if __name__ == "__main__":

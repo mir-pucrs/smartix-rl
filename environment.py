@@ -40,30 +40,26 @@ class Environment:
     def get_available_actions(self, state):
         available_actions = list()
         for column in state.indexes_map.keys():
-            # print(state.indexes_map[column])
             if state.indexes_map[column] == 0:
                 available_actions.append(Action(column, 'CREATE'))
             else:
                 available_actions.append(Action(column, 'DROP'))
-        # print("\n\nAvailable actions:", available_actions, "\n\n")
         return available_actions
 
 
 
     def get_reward(self, state):
         if repr(state) in self.rewards_archive.keys():
-            self.rewards[state] = self.rewards_archive[repr(state)]
             print("State-reward in dictionary!")
+            self.rewards[state] = self.rewards_archive[repr(state)]
         else:
-            self.rewards[state] = self.benchmark.run()
-            self.rewards_archive[repr(state)] = self.rewards[state]
             print("State-reward not in dictionary")
-
-        # Write state-reward to file
-        with open('data/srrf.txt', 'w+') as f:
-            f.write(repr(state) + ': ' + str(self.rewards[state]) + '\n')
+            # self.rewards[state] = self.benchmark.run()
+            self.rewards[state] = randint(2000, 3000)
+            self.rewards_archive[repr(state)] = self.rewards[state]
 
         return self.rewards[state]
+        
 
 
 
@@ -78,8 +74,9 @@ class Environment:
 
     def get_state_features(self, state):
         state_features = dict()
+        state_features['Bias'] = 1.0
         for column in state.indexes_map.keys():
-            state_features[column] = state.indexes_map[column]
+            state_features[column] = state.indexes_map[column] + 1.0
         return state_features
 
 
@@ -105,36 +102,61 @@ class Environment:
         with open('data/rewards_archive.json', 'w+') as outfile:
             json.dump(self.rewards_archive, outfile)
 
-    def dump_rewards_to_plot(self):
-        with open('data/rewards.dat', 'w+') as outfile:
+    def dump_rewards_history_to_plot(self):
+        with open('data/rewards_history_plot.dat', 'w+') as outfile:
             for value in self.rewards.values():
                 outfile.write(str(value) + '\n')
 
-    def plot_rewards(self, episode):
-        with open("plots/averages.gnu") as f: 
-            gp.c(f.read())
-            gp.pdf('plots/rewards_plot_%d.pdf' % episode)
+    def dump_episode_reward_to_plot(self, episode_reward):
+        with open('data/episode_reward_plot.dat', 'a+') as outfile:
+            outfile.write(str(episode_reward) + '\n')
 
-    def post_episode(self, q_values, episode):
+    def dump_weights_difference_to_plot(self, weights_difference):
+        with open('data/weights_difference_plot.dat', 'a+') as outfile:
+            outfile.write(str(weights_difference) + '\n')
+
+    def plot_rewards_history(self, episode):
+        with open("plots/averages_rewards_history.gnu") as f: 
+            gp.c(f.read())
+            gp.pdf('plots/rewards_history_plot_%d.pdf' % episode)
+    
+    def plot_episode_reward(self, episode):
+        with open("plots/averages_episode_reward.gnu") as f: 
+            gp.c(f.read())
+            gp.pdf('plots/episode_reward_plot_%d.pdf' % episode)
+
+    def plot_weights_difference(self, episode):
+        with open("plots/averages_weights_difference.gnu") as f: 
+            gp.c(f.read())
+            gp.pdf('plots/weights_difference_plot_%d.pdf' % episode)
+
+    def post_episode(self, episode, episode_reward, weights_difference):
         # Dump rewards archive
         self.dump_rewards_archive()
 
         # Dump computed state-rewards up to now
-        self.dump_rewards_to_plot()
-        
-        # Write highest Q-value to file
-        max_q_value = max(q_values, key = lambda x: q_values.get(x) )
-        with open('data/max_q_values.txt', 'a+') as outfile:
-            outfile.write(repr(max_q_value) + ': ' + str(q_values[max_q_value]) + '\n')
+        self.dump_rewards_history_to_plot()
+
+        # Dump total episode reward
+        self.dump_episode_reward_to_plot(episode_reward)
+
+        # Dump weights difference to plot
+        self.dump_weights_difference_to_plot(episode_reward)
+
+        # Write episode rewards to file
+        with open('data/episode_reward.csv', 'a+') as f:
+            f.write(str(episode) + ', ' + str(episode_reward) + '\n')
 
         # Write highest state reward to file
-        max_reward = max(self.rewards, key = lambda x: self.rewards.get(x) )
-        with open('data/max_rewards.txt', 'a+') as outfile:
-            outfile.write(repr(max_reward) + ': ' + str(self.rewards[max_reward]) + '\n')
+        max_reward = max(self.rewards, key = lambda x: self.rewards.get(x))
+        with open('data/max_reward.csv', 'a+') as outfile:
+            outfile.write(str(episode) + ', ' + repr(max_reward) + ', ' + str(self.rewards[max_reward]) + '\n')
 
         # Plot rewards
-        self.plot_rewards(episode)
         print("Plotting graphics...")
+        self.plot_rewards_history(episode)
+        self.plot_episode_reward(episode)
+        self.plot_weights_difference(episode)
 
 
 if __name__ == "__main__":

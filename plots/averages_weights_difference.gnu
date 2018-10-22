@@ -26,7 +26,7 @@ init(x) = (back1 = back2 = back3 = back4 = back5 = sum = 0)
 # Plot data, running average and cumulative average
 #
 
-datafile = 'data/rewards.dat'
+datafile = 'data/weights_difference_plot.dat'
 #set xrange [0:57]
 
 set style data linespoints
