@@ -7,7 +7,7 @@ class Agent:
 
 
     MAX_TRAINING_EPISODES = 15
-    MAX_STEPS_PER_EPISODE = 2
+    MAX_STEPS_PER_EPISODE = 100
 
 
     def __init__(self):
@@ -113,8 +113,10 @@ class Agent:
 
         for a in action_space:
             self.action_weights[a] = dict()
+            self.prev_action_weights[a] = dict()
             for f in state_features.keys():
                 self.action_weights[a][f] = random.random()
+                self.prev_action_weights[a][f] = 0.0
 
 
 
@@ -182,6 +184,8 @@ class Agent:
                 # TD target (what really happened)
                 td_target = self.reward + self.gamma * self.max_a(self.state)
 
+                error = ((td_target - q_value)**2)/2
+
                 # Update action weights
                 self.update(self.state, self.action, td_target, q_value)
 
@@ -192,6 +196,10 @@ class Agent:
 
                 # Update statistics
                 self.episode_reward[episode] += self.reward
+                with open('data/history.dat', 'a+') as outfile:
+                    outfile.write(str(episode) + ', ' + str(step) + ', ' + str(self.reward) + ', ' + str(error) + '\n')
+                with open('data/episode_error_plot.dat', 'a+') as outfile:
+                    outfile.write(str(error) + '\n')
 
                 # If episode's last execution
                 if step+1 == self.MAX_STEPS_PER_EPISODE:

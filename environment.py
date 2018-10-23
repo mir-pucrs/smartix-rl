@@ -54,12 +54,11 @@ class Environment:
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
             print("State-reward not in dictionary")
-            # self.rewards[state] = self.benchmark.run()
-            self.rewards[state] = randint(2000, 3000)
+            # self.rewards[state] = randint(2000, 3000)
+            self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
 
-        return self.rewards[state]
-        
+        return self.rewards[state]        
 
 
 
@@ -102,9 +101,9 @@ class Environment:
         with open('data/rewards_archive.json', 'w+') as outfile:
             json.dump(self.rewards_archive, outfile)
 
-    def dump_rewards_history_to_plot(self):
+    def dump_rewards_history_to_plot(self, rewards):
         with open('data/rewards_history_plot.dat', 'w+') as outfile:
-            for value in self.rewards.values():
+            for value in rewards.values():
                 outfile.write(str(value) + '\n')
 
     def dump_episode_reward_to_plot(self, episode_reward):
@@ -130,18 +129,23 @@ class Environment:
             gp.c(f.read())
             gp.pdf('plots/weights_difference_plot_%d.pdf' % episode)
 
+    def plot_error(self, episode):
+        with open("plots/averages_episode_error.gnu") as f: 
+            gp.c(f.read())
+            gp.pdf('plots/episode_error_plot_%d.pdf' % episode)
+
     def post_episode(self, episode, episode_reward, weights_difference):
         # Dump rewards archive
         self.dump_rewards_archive()
 
         # Dump computed state-rewards up to now
-        self.dump_rewards_history_to_plot()
+        self.dump_rewards_history_to_plot(self.rewards)
 
         # Dump total episode reward
         self.dump_episode_reward_to_plot(episode_reward)
 
         # Dump weights difference to plot
-        self.dump_weights_difference_to_plot(episode_reward)
+        self.dump_weights_difference_to_plot(weights_difference)
 
         # Write episode rewards to file
         with open('data/episode_reward.csv', 'a+') as f:
