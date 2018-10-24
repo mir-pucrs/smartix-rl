@@ -22,7 +22,7 @@ class Agent:
         
         self.alpha = 0.01 # Learning rate
         self.gamma = 0.8 # Discount factor
-        self.epsilon = 0.8 # Epsilon-greedy value
+        self.epsilon = 0.9 # Epsilon-greedy value
 
         self.action_weights = dict()
         self.prev_action_weights = dict()
@@ -210,7 +210,8 @@ class Agent:
                     print("Total reward in episode {}: {}".format(episode, self.episode_reward[episode]))
 
                     # Decrease epsilon value by half
-                    self.epsilon = self.epsilon / 2
+                    self.epsilon = (80 - math.log(episode+1) * 15) * 0.01
+                    print("Epsilon =", self.epsilon)
 
                     # Reset environment and attributes
                     self.state = self.env.reset()

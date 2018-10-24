@@ -21,8 +21,8 @@ class TPCH:
     '''
         Global configuration
     '''
-    DB_CONFIG = {'user': 'root', 'password': 'root', 'host': '127.0.0.1', 'database': 'tpch'}
-    REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-tools/dbgen/%d' % SCALE_FACTOR
+    DB_CONFIG = {'user': 'dbuser', 'password': 'dbuser', 'host': '127.0.0.1', 'database': 'tpch1g'}
+    REFRESH_FILES_PATH = '/home/sap-server/smartix/tpch-tools/dbgen/%d' % SCALE_FACTOR
 
 
     '''
@@ -241,7 +241,7 @@ class TPCH:
         elapsed_time = time.time() - start_time
         # print("\n*** Throughput test elapsed time:", elapsed_time)
 
-        return ((2 * 22) / elapsed_time) * 3600 * self.SCALE_FACTOR
+        return ((self.NUM_STREAMS * 22) / elapsed_time) * 3600 * self.SCALE_FACTOR
 
 
     def run(self):

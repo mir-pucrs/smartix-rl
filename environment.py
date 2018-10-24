@@ -27,6 +27,7 @@ class Environment:
         # State-rewards file records to dict
         self.rewards_list = list()
         self.rewards_archive = self.load_rewards_archive()
+        self.visited_states = list()
 
 
 
@@ -61,6 +62,10 @@ class Environment:
 
         # Save reward to list for plotting
         self.rewards_list.append(self.rewards[state])
+
+        # Save visited state
+        if state not in self.visited_states:
+            self.visited_states.append(state)
 
         return self.rewards[state]
 
@@ -154,6 +159,10 @@ class Environment:
         # Write episode rewards to file
         with open('data/episode_reward.csv', 'a+') as f:
             f.write(str(episode) + ', ' + str(episode_reward) + '\n')
+        
+        # Write number of visited distinct states
+        with open('data/visited_distinct_states.dat', 'a+') as f:
+            f.write(str(episode) + ', ' + str(len(self.visited_states)) + '\n')
 
         # Write highest state reward to file
         max_reward = max(self.rewards, key = lambda x: self.rewards.get(x))
