@@ -25,6 +25,7 @@ class Environment:
         self.rewards = dict()
 
         # State-rewards file records to dict
+        self.rewards_list = list()
         self.rewards_archive = self.load_rewards_archive()
 
 
@@ -58,7 +59,10 @@ class Environment:
             self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
 
-        return self.rewards[state]        
+        # Save reward to list for plotting
+        self.rewards_list.append(self.rewards[state])
+
+        return self.rewards[state]
 
 
 
@@ -103,7 +107,7 @@ class Environment:
 
     def dump_rewards_history_to_plot(self, rewards):
         with open('data/rewards_history_plot.dat', 'w+') as outfile:
-            for value in rewards.values():
+            for value in rewards:
                 outfile.write(str(value) + '\n')
 
     def dump_episode_reward_to_plot(self, episode_reward):
@@ -139,7 +143,7 @@ class Environment:
         self.dump_rewards_archive()
 
         # Dump computed state-rewards up to now
-        self.dump_rewards_history_to_plot(self.rewards)
+        self.dump_rewards_history_to_plot(self.rewards_list)
 
         # Dump total episode reward
         self.dump_episode_reward_to_plot(episode_reward)
@@ -161,6 +165,7 @@ class Environment:
         self.plot_rewards_history(episode)
         self.plot_episode_reward(episode)
         self.plot_weights_difference(episode)
+        self.plot_error(episode)
 
 
 if __name__ == "__main__":

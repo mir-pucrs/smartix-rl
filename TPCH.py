@@ -150,12 +150,14 @@ class TPCH:
         # SHOW PROFILES
         cursor.execute("SHOW PROFILES")
 
+        results = cursor.fetchall()
+
         # CLOSE DB CONNECTION
         conn.close()
 
         # TRANSFORM FETCHED PROFILES INTO DICT OF (QUERY NUM: DURATION)
         profiles = dict()
-        for row in cursor.fetchall():
+        for row in results:
             profiles[row[0]] = row[1]
 
         # RETURN PROFILES RESULT
