@@ -22,7 +22,7 @@ class TPCH:
         Global configuration
     '''
     DB_CONFIG = {'user': 'root', 'password': 'root', 'host': '127.0.0.1', 'database': 'tpch'}
-    REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-tools/dbgen'
+    REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-tools/dbgen/%d' % SCALE_FACTOR
 
 
     '''

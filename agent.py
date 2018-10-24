@@ -6,7 +6,7 @@ import random, pprint, copy, math
 class Agent:
 
 
-    MAX_TRAINING_EPISODES = 15
+    MAX_TRAINING_EPISODES = 50
     MAX_STEPS_PER_EPISODE = 100
 
 
