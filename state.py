@@ -1,5 +1,5 @@
 from database import Database
-
+import pprint
 
 class State:
 
@@ -27,4 +27,4 @@ class State:
 
 if __name__ == "__main__":
     state = State()
-    print("\n\nIndexes map: \n", state.indexes_map)
+    pprint.pprint(state.indexes_map, width=2)

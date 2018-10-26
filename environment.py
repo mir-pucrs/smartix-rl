@@ -41,11 +41,12 @@ class Environment:
 
     def get_available_actions(self, state):
         available_actions = list()
-        for column in state.indexes_map.keys():
-            if state.indexes_map[column] == 0:
-                available_actions.append(Action(column, 'CREATE'))
-            else:
-                available_actions.append(Action(column, 'DROP'))
+        for table, columns in state.indexes_map.items():
+            for column in columns.keys():
+                if state.indexes_map[table][column] == 0:
+                    available_actions.append(Action(table, column, 'CREATE'))
+                else:
+                    available_actions.append(Action(table, column, 'DROP'))
         return available_actions
 
 
@@ -56,7 +57,7 @@ class Environment:
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
             print("State-reward not in dictionary")
-            # self.rewards[state] = randint(2000, 2500)
+            # self.rewards[state] = randint(2500, 2550)
             self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
 
@@ -73,9 +74,10 @@ class Environment:
 
     def get_action_space(self, state):
         action_space = list()
-        for column in state.indexes_map.keys():
-            action_space.append(Action(column, 'CREATE'))
-            action_space.append(Action(column, 'DROP'))
+        for table, columns in state.indexes_map.items():
+            for column in columns.keys():
+                action_space.append(Action(table, column, 'CREATE'))
+                action_space.append(Action(table, column, 'DROP'))
         return action_space
 
 
@@ -83,8 +85,9 @@ class Environment:
     def get_state_features(self, state):
         state_features = dict()
         state_features['Bias'] = 1.0
-        for column in state.indexes_map.keys():
-            state_features[column] = state.indexes_map[column] + 1.0
+        for table, columns in state.indexes_map.items():
+            for column in columns.keys():
+                state_features[column] = state.indexes_map[table][column] + 1.0
         return state_features
 
 
@@ -186,10 +189,3 @@ if __name__ == "__main__":
     elapsed_time = time.time() - start_time
 
     print("It took %.2f seconds to train.", elapsed_time)
-
-    # env = Environment()
-    # env.reset()
-    # print("Resetted Environment")
-
-    # env = Environment()
-    # print(env.rewards_archive)

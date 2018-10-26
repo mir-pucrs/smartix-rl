@@ -1,10 +1,19 @@
 import pyodbc
+import pprint
 
 pyodbc.pooling = False
 
 class Database:
 
-    lineitem = ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey']
+    tables = {
+        'customer': ['c_custkey', 'c_nationkey'],
+        'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
+        'nation': ['n_nationkey', 'n_regionkey'],
+        'orders': ['o_orderkey', 'o_custkey'],
+        'part': ['p_partkey'],
+        'partsupp': ['ps_partkey', 'ps_suppkey'],
+        'supplier': ['s_suppkey', 's_nationkey']
+    }
 
 
     def __init__(self):
@@ -47,59 +56,65 @@ class Database:
     """
         State-related methods
     """
-    def get_table_columns(self, table = "lineitem"):
+    def get_table_columns(self, table):
         self.conn = pyodbc.connect(self.connection_string)
         self.cur = self.conn.cursor()
         self.cur.execute('SHOW COLUMNS FROM %s;' % table)
         table_columns = list()
         for row in self.cur.fetchall():
-            if row[0] not in self.lineitem:
+            if row[0] not in self.tables[table]:
                 table_columns.append(row[0])
         self.conn.commit()
         self.cur.close()
         self.conn.close()
         return table_columns
 
-    def get_table_indexed_columns(self, table = "lineitem"):
+    def get_table_indexed_columns(self, table):
         self.conn = pyodbc.connect(self.connection_string)
         self.cur = self.conn.cursor()
         self.cur.execute('SHOW INDEXES FROM %s;' % table)
         table_indexes = list()
         for index in self.cur.fetchall():
-            if index[2] not in self.lineitem:
+            if index[2] not in self.tables[table]:
                 table_indexes.append(index[4])
         self.conn.commit()
         self.cur.close()
         self.conn.close()
         return table_indexes
 
-    def get_indexes_map(self, table = "lineitem"):
-        indexed_columns = self.get_table_indexed_columns()
-        table_columns = self.get_table_columns()
+    def get_indexes_map(self):
         indexes_map = dict()
-        for column in table_columns:
-            indexes_map[column] = 0
-            for index in indexed_columns:
-                if column == index:
-                    indexes_map[column] = 1
+        for table in self.tables.keys():
+            indexes_map[table] = dict()
+            indexed_columns = self.get_table_indexed_columns(table)
+            table_columns = self.get_table_columns(table)
+            for column in table_columns:
+                indexes_map[table][column] = 0
+                for index in indexed_columns:
+                    if column == index:
+                        indexes_map[table][column] = 1
+
         return indexes_map
 
     
     """
         Environment-related methods
     """
-    def reset_indexes(self, table = "lineitem"):
+    def reset_indexes(self):
         # FETCH INDEX NAMES
         self.conn = pyodbc.connect(self.connection_string)
         self.cur = self.conn.cursor()
-        self.cur.execute('SHOW INDEXES FROM %s;' % table)
-        index_names = list()
-        for index in self.cur.fetchall():
-            index_names.append(index[2])
-        
-        for index in index_names:
-            if "idx_" in index:
-                self.cur.execute("DROP INDEX %s ON %s;" % (index, table))
+
+        for table in self.tables.keys():
+            self.cur.execute('SHOW INDEXES FROM %s;' % table)
+            index_names = list()
+
+            for index in self.cur.fetchall():
+                index_names.append(index[2])
+
+            for index in index_names:
+                if "idx_" in index:
+                    self.cur.execute("DROP INDEX %s ON %s;" % (index, table))
         
         self.conn.commit()
         self.cur.close()
@@ -111,19 +126,17 @@ class Database:
 if __name__ == "__main__":
     db = Database()
 
-    # if (db.reset_indexes()):
-    #     print("YEAHH!")
+    # db.create_index('c_phone', 'customer')
+    # db.create_index('l_commitdate', 'lineitem')
+    # db.create_index('n_name', 'nation')
+    # db.create_index('o_clerk', 'orders')
+    # db.create_index('p_brand', 'part')
+    # db.create_index('s_phone', 'supplier')
+    # db.create_index('ps_availqty', 'partsupp')
 
+    if (db.reset_indexes()):
+        print("YEAHH!")
 
+    indexes_map = db.get_indexes_map()
 
-    # table_columns = db.get_table_columns()
-
-    # print(table_columns)
-
-    # indexes_map = db.get_indexes_map()
-
-    # print(indexes_map)
-
-
-    db.create_index('l_quantity', 'lineitem')
-    db.drop_index('l_quantity', 'lineitem')
+    pprint.pprint(indexes_map)

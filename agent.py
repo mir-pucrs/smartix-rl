@@ -17,10 +17,10 @@ class Agent:
         # Agent attributes
         self.state = None
         self.next_state = None
-        self.reward = None
+        self.reward = 0.0
         self.action = None
         
-        self.alpha = 0.01 # Learning rate
+        self.alpha = 0.05 # Learning rate
         self.gamma = 0.8 # Discount factor
         self.epsilon = 0.9 # Epsilon-greedy value
 
@@ -97,13 +97,15 @@ class Agent:
         if rand > self.epsilon: # EXPLOIT
             print("Random %.2f > %.2f Epsilon (Get argmax action)" % (rand, self.epsilon))
             action = self.argmax_a(state)
+            action_type = 'ARGMAX'
             # print("Action:", action)
         else: # EXPLORE
             print("Random %.2f < %.2f Epsilon (Get random action)" % (rand, self.epsilon))
             action = self.get_random_action(state)
+            action_type = 'RANDOM'
             # print("Action:", action)
 
-        return action
+        return action, action_type
 
 
 
@@ -143,7 +145,6 @@ class Agent:
 
         for weight in self.action_weights[action].keys():
             partial_derivative = state_features[weight]
-            # partial_derivative = 10**-5
             self.action_weights[self.action][weight] += self.alpha * (td_target - q_value) * partial_derivative
     
 
@@ -156,6 +157,8 @@ class Agent:
         # Initialize features' weights vector
         self.initialize_weights(self.state)
 
+        pprint.pprint(self.action_weights)
+
         # Episodes loop
         for episode in range(self.MAX_TRAINING_EPISODES):
 
@@ -167,11 +170,17 @@ class Agent:
 
                 print("\n\nEpisode {}/{} @ Step {}".format(episode, self.MAX_TRAINING_EPISODES, step))
 
-
-
                 # Get action
-                self.action = self.get_action_epsilon_greedy(self.state)
+                self.action, action_type = self.get_action_epsilon_greedy(self.state)
                 print("Chosen action: ", self.action)
+
+                # Write for every state which utility values are for each possible action
+                with open('data/state_utilities.csv', 'a+') as outfile:
+                    outfile.write(str(episode) + ' | ' + str(step) + ' | ' + str(repr(self.state)) + ' | ' + action_type + ' | ' + str(repr(self.action)))
+                    prediction = self.predict(self.state)
+                    for action in self.env.get_available_actions(self.state):
+                        outfile.write(' | ' + str(repr(action)) + ': ' + str(prediction[action]))
+                    outfile.write('\n')
 
                 # Execute action in the environment
                 self.next_state, self.reward = self.env.step(self.action)
@@ -184,7 +193,8 @@ class Agent:
                 # TD target (what really happened)
                 td_target = self.reward + self.gamma * self.max_a(self.state)
 
-                error = ((td_target - q_value)**2)/2
+                error = td_target - q_value
+                print("Error:", error)
 
                 # Update action weights
                 self.update(self.state, self.action, td_target, q_value)

@@ -4,18 +4,18 @@ from database import Database
 class Action:
 
 
-    def __init__(self, column, type):
+    def __init__(self, table, column, type):
         # Database instance
         self.db = Database()
 
         # Action attributes
-        self.table = "lineitem"
+        self.table = table
         self.column = column
         self.type = type
 
 
     def __repr__(self):
-        return str(self.column) + ',' + str(self.type)
+        return str(self.table) + ',' + str(self.column) + ',' + str(self.type)
 
 
     def __hash__(self):
@@ -35,5 +35,7 @@ class Action:
 
 
 if __name__ == "__main__":
-    action = Action("l_shipmode", "CREATE")
-    action.execute()
+    action1 = Action("lineitem", "l_shipmode", "CREATE")
+    action2 = Action("lineitem", "l_shipmode", "DROP")
+    action1.execute()
+    action2.execute()
