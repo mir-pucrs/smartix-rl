@@ -5543,3 +5543,1400 @@ Dropped index on (lineitem) l_quantity
 State-reward not in dictionary
 
 Starting benchmark...
+Power@Size = 3462.195234371068
+Throughput@Size = 1998.3011753779083
+QphH@Size = 2630.3058389152197
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2630.3058389152197
+
+
+Episode 4/50 @ Step 23
+Random 0.14 < 0.59 Epsilon (Get random action)
+Chosen action:  l_commitdate,CREATE
+Created index on (lineitem) l_commitdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3475.24018048362
+Throughput@Size = 2005.5937702118865
+QphH@Size = 2640.060615964713
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2640.060615964713
+
+
+Episode 4/50 @ Step 24
+Random 0.64 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3607.860478844636
+Throughput@Size = 2033.6245414469238
+QphH@Size = 2708.695924590817
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2708.695924590817
+
+
+Episode 4/50 @ Step 25
+Random 0.55 < 0.59 Epsilon (Get random action)
+Chosen action:  l_quantity,CREATE
+Created index on (lineitem) l_quantity
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3459.576544300285
+Throughput@Size = 2022.090155997031
+QphH@Size = 2644.915059911723
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2644.915059911723
+
+
+Episode 4/50 @ Step 26
+Random 0.59 < 0.59 Epsilon (Get random action)
+Chosen action:  l_receiptdate,CREATE
+Created index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3555.064882526827
+Throughput@Size = 1991.1433459894552
+QphH@Size = 2660.572078595894
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2660.572078595894
+
+
+Episode 4/50 @ Step 27
+Random 0.31 < 0.59 Epsilon (Get random action)
+Chosen action:  l_quantity,DROP
+Dropped index on (lineitem) l_quantity
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3466.228002726504
+Throughput@Size = 1992.5688059086624
+QphH@Size = 2628.0597010722413
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2628.0597010722413
+
+
+Episode 4/50 @ Step 28
+Random 0.92 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3566.509880029357
+Throughput@Size = 2015.1953901996312
+QphH@Size = 2680.8980341177844
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2680.8980341177844
+
+
+Episode 4/50 @ Step 29
+Random 0.20 < 0.59 Epsilon (Get random action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2628.0597010722413
+
+
+Episode 4/50 @ Step 30
+Random 0.75 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2680.8980341177844
+
+
+Episode 4/50 @ Step 31
+Random 0.56 < 0.59 Epsilon (Get random action)
+Chosen action:  l_linestatus,CREATE
+Created index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3451.8358925522402
+Throughput@Size = 1995.8418277236128
+QphH@Size = 2624.751122829254
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2624.751122829254
+
+
+Episode 4/50 @ Step 32
+Random 0.12 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,CREATE
+Created index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3468.7991246732267
+Throughput@Size = 1962.3309965955755
+QphH@Size = 2609.0097821414683
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2609.0097821414683
+
+
+Episode 4/50 @ Step 33
+Random 0.76 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3550.2073647248
+Throughput@Size = 2011.8102655377782
+QphH@Size = 2672.51634628138
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2672.51634628138
+
+
+Episode 4/50 @ Step 34
+Random 0.98 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2609.0097821414683
+
+
+Episode 4/50 @ Step 35
+Random 0.67 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2672.51634628138
+
+
+Episode 4/50 @ Step 36
+Random 0.68 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2609.0097821414683
+
+
+Episode 4/50 @ Step 37
+Random 0.20 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,DROP
+Dropped index on (lineitem) l_shipinstruct
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3481.5625325167534
+Throughput@Size = 1980.041478012648
+QphH@Size = 2625.573884444681
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2625.573884444681
+
+
+Episode 4/50 @ Step 38
+Random 0.78 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3431.6047912910562
+Throughput@Size = 2023.9083784868783
+QphH@Size = 2635.3849223120487
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2635.3849223120487
+
+
+Episode 4/50 @ Step 39
+Random 0.70 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2625.573884444681
+
+
+Episode 4/50 @ Step 40
+Random 0.71 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2635.3849223120487
+
+
+Episode 4/50 @ Step 41
+Random 0.18 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,CREATE
+Created index on (lineitem) l_shipinstruct
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2672.51634628138
+
+
+Episode 4/50 @ Step 42
+Random 0.34 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipmode,CREATE
+Created index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3492.5740693718203
+Throughput@Size = 2002.2224919600499
+QphH@Size = 2644.411154970554
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2644.411154970554
+
+
+Episode 4/50 @ Step 43
+Random 0.70 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3468.9785431749547
+Throughput@Size = 1990.1481778436068
+QphH@Size = 2627.504771961072
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2627.504771961072
+
+
+Episode 4/50 @ Step 44
+Random 0.12 < 0.59 Epsilon (Get random action)
+Chosen action:  l_receiptdate,DROP
+Dropped index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3645.044707424882
+Throughput@Size = 2035.7929810628816
+QphH@Size = 2724.0698285902986
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 1}
+Resulting reward:  2724.0698285902986
+
+
+Episode 4/50 @ Step 45
+Random 0.37 < 0.59 Epsilon (Get random action)
+Chosen action:  l_comment,DROP
+Dropped index on (lineitem) l_comment
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2640.7090582032997
+
+
+Episode 4/50 @ Step 46
+Random 0.29 < 0.59 Epsilon (Get random action)
+Chosen action:  l_linestatus,DROP
+Dropped index on (lineitem) l_linestatus
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2670.5030850036615
+
+
+Episode 4/50 @ Step 47
+Random 0.95 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2683.865919360862
+
+
+Episode 4/50 @ Step 48
+Random 0.77 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2670.5030850036615
+
+
+Episode 4/50 @ Step 49
+Random 0.37 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,DROP
+Dropped index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3442.663712372638
+Throughput@Size = 2015.2944176495616
+QphH@Size = 2634.0047383004635
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2634.0047383004635
+
+
+Episode 4/50 @ Step 50
+Random 0.49 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,DROP
+Dropped index on (lineitem) l_shipinstruct
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3461.1569856015417
+Throughput@Size = 2005.1912215462921
+QphH@Size = 2634.441421615185
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2634.441421615185
+
+
+Episode 4/50 @ Step 51
+Random 0.72 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3521.8906853558797
+Throughput@Size = 2005.0090920579962
+QphH@Size = 2657.3337850885246
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2657.3337850885246
+
+
+Episode 4/50 @ Step 52
+Random 0.72 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2634.441421615185
+
+
+Episode 4/50 @ Step 53
+Random 0.57 < 0.59 Epsilon (Get random action)
+Chosen action:  l_receiptdate,CREATE
+Created index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3572.9001011950027
+Throughput@Size = 2027.6536711871488
+QphH@Size = 2691.5802063050214
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2691.5802063050214
+
+
+Episode 4/50 @ Step 54
+Random 0.04 < 0.59 Epsilon (Get random action)
+Chosen action:  l_returnflag,CREATE
+Created index on (lineitem) l_returnflag
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3450.9162050785926
+Throughput@Size = 1964.7783401639713
+QphH@Size = 2603.898118870872
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2603.898118870872
+
+
+Episode 4/50 @ Step 55
+Random 0.94 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3587.0773191317503
+Throughput@Size = 1997.7763006915425
+QphH@Size = 2676.9718072683477
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2676.9718072683477
+
+
+Episode 4/50 @ Step 56
+Random 0.14 < 0.59 Epsilon (Get random action)
+Chosen action:  l_tax,DROP
+Dropped index on (lineitem) l_tax
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3566.6111502416697
+Throughput@Size = 2002.030729814116
+QphH@Size = 2672.1648759164345
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2672.1648759164345
+
+
+Episode 4/50 @ Step 57
+Random 0.97 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3447.586910169209
+Throughput@Size = 1989.4000819172795
+QphH@Size = 2618.898562660945
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2618.898562660945
+
+
+Episode 4/50 @ Step 58
+Random 0.09 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipmode,DROP
+Dropped index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3556.675545816841
+Throughput@Size = 1969.9950970861448
+QphH@Size = 2647.0046065667066
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2647.0046065667066
+
+
+Episode 4/50 @ Step 59
+Random 0.23 < 0.59 Epsilon (Get random action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3489.258255073884
+Throughput@Size = 1999.645215424517
+QphH@Size = 2641.4538752624453
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2641.4538752624453
+
+
+Episode 4/50 @ Step 60
+Random 0.40 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,CREATE
+Created index on (lineitem) l_shipinstruct
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3528.1027102483786
+Throughput@Size = 1993.116030311918
+QphH@Size = 2651.7763986397813
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2651.7763986397813
+
+
+Episode 4/50 @ Step 61
+Random 0.29 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipmode,CREATE
+Created index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3560.4818588389126
+Throughput@Size = 2004.0946363726944
+QphH@Size = 2671.2436422388255
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2671.2436422388255
+
+
+Episode 4/50 @ Step 62
+Random 0.13 < 0.59 Epsilon (Get random action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3465.0600011941647
+Throughput@Size = 2016.9182288713214
+QphH@Size = 2643.623021639317
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2643.623021639317
+
+
+Episode 4/50 @ Step 63
+Random 0.60 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2671.2436422388255
+
+
+Episode 4/50 @ Step 64
+Random 0.22 < 0.59 Epsilon (Get random action)
+Chosen action:  l_tax,CREATE
+Created index on (lineitem) l_tax
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3461.0870404189404
+Throughput@Size = 2017.4856134323493
+QphH@Size = 2642.4786301656936
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2642.4786301656936
+
+
+Episode 4/50 @ Step 65
+Random 0.69 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3446.3120803763463
+Throughput@Size = 2007.8253703528285
+QphH@Size = 2630.5118948853024
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2630.5118948853024
+
+
+Episode 4/50 @ Step 66
+Random 0.66 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2642.4786301656936
+
+
+Episode 4/50 @ Step 67
+Random 0.74 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2630.5118948853024
+
+
+Episode 4/50 @ Step 68
+Random 0.92 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  2642.4786301656936
+
+
+Episode 4/50 @ Step 69
+Random 0.47 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,DROP
+Dropped index on (lineitem) l_shipinstruct
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2676.9718072683477
+
+
+Episode 4/50 @ Step 70
+Random 0.73 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2603.898118870872
+
+
+Episode 4/50 @ Step 71
+Random 0.53 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipmode,DROP
+Dropped index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3490.3611183399407
+Throughput@Size = 1999.5859947906995
+QphH@Size = 2641.832168968072
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2641.832168968072
+
+
+Episode 4/50 @ Step 72
+Random 0.93 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3524.535590025134
+Throughput@Size = 2019.820844586938
+QphH@Size = 2668.1323903099874
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2668.1323903099874
+
+
+Episode 4/50 @ Step 73
+Random 0.53 < 0.59 Epsilon (Get random action)
+Chosen action:  l_comment,CREATE
+Created index on (lineitem) l_comment
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3556.240986700943
+Throughput@Size = 1991.995190123988
+QphH@Size = 2661.5812857078145
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2661.5812857078145
+
+
+Episode 4/50 @ Step 74
+Random 0.08 < 0.59 Epsilon (Get random action)
+Chosen action:  l_receiptdate,DROP
+Dropped index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3473.6239828834264
+Throughput@Size = 1978.2186415874612
+QphH@Size = 2621.3713427908833
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2621.3713427908833
+
+
+Episode 4/50 @ Step 75
+Random 0.20 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,CREATE
+Created index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3461.244249748906
+Throughput@Size = 2031.502235393875
+QphH@Size = 2651.7023646346697
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2651.7023646346697
+
+
+Episode 4/50 @ Step 76
+Random 0.02 < 0.59 Epsilon (Get random action)
+Chosen action:  l_quantity,CREATE
+Created index on (lineitem) l_quantity
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3557.6702404922835
+Throughput@Size = 2006.7861473969683
+QphH@Size = 2671.981166779877
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2671.981166779877
+
+
+Episode 4/50 @ Step 77
+Random 0.07 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,DROP
+Dropped index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3544.4854381030545
+Throughput@Size = 1973.6725533728606
+QphH@Size = 2644.9297958573075
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2644.9297958573075
+
+
+Episode 4/50 @ Step 78
+Random 0.21 < 0.59 Epsilon (Get random action)
+Chosen action:  l_returnflag,DROP
+Dropped index on (lineitem) l_returnflag
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3627.236107684255
+Throughput@Size = 2042.3871235070726
+QphH@Size = 2721.8046072880093
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2721.8046072880093
+
+
+Episode 4/50 @ Step 79
+Random 0.92 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3548.9092480330078
+Throughput@Size = 2016.4608004923
+QphH@Size = 2675.114274785876
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2675.114274785876
+
+
+Episode 4/50 @ Step 80
+Random 0.69 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2721.8046072880093
+
+
+Episode 4/50 @ Step 81
+Random 0.20 < 0.59 Epsilon (Get random action)
+Chosen action:  l_linestatus,CREATE
+Created index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3458.0633275444934
+Throughput@Size = 1995.9991603063493
+QphH@Size = 2627.2212503070596
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2627.2212503070596
+
+
+Episode 4/50 @ Step 82
+Random 0.05 < 0.59 Epsilon (Get random action)
+Chosen action:  l_receiptdate,CREATE
+Created index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3481.66892451584
+Throughput@Size = 2032.0616528329936
+QphH@Size = 2659.8808073612863
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2659.8808073612863
+
+
+Episode 4/50 @ Step 83
+Random 0.17 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,CREATE
+Created index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3476.611844665395
+Throughput@Size = 2042.9280214967011
+QphH@Size = 2665.0455450769077
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2665.0455450769077
+
+
+Episode 4/50 @ Step 84
+Random 0.87 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3467.763534443625
+Throughput@Size = 2045.233917763205
+QphH@Size = 2663.153694293011
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2663.153694293011
+
+
+Episode 4/50 @ Step 85
+Random 0.67 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2665.0455450769077
+
+
+Episode 4/50 @ Step 86
+Random 0.44 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipmode,CREATE
+Created index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3559.3610604726186
+Throughput@Size = 2017.2961475998986
+QphH@Size = 2679.6054476748072
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2679.6054476748072
+
+
+Episode 4/50 @ Step 87
+Random 0.52 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,DROP
+Dropped index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3633.460667916007
+Throughput@Size = 2068.712988542705
+QphH@Size = 2741.639523547342
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  2741.639523547342
+
+
+Episode 4/50 @ Step 88
+Random 0.06 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipdate,DROP
+Dropped index on (lineitem) l_shipdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3054.5235949627663
+Throughput@Size = 917.0012418757461
+QphH@Size = 1673.619410116776
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  1673.619410116776
+
+
+Episode 4/50 @ Step 89
+Random 0.45 < 0.59 Epsilon (Get random action)
+Chosen action:  l_extendedprice,CREATE
+Created index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 2987.328606802456
+Throughput@Size = 906.9103410864769
+QphH@Size = 1645.9766722929596
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  1645.9766722929596
+
+
+Episode 4/50 @ Step 90
+Random 0.58 < 0.59 Epsilon (Get random action)
+Chosen action:  l_linestatus,DROP
+Dropped index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3017.2036125169966
+Throughput@Size = 913.3724300526687
+QphH@Size = 1660.0694550314272
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  1660.0694550314272
+
+
+Episode 4/50 @ Step 91
+Random 0.90 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3091.62250466499
+Throughput@Size = 912.4359144235935
+QphH@Size = 1679.5557171753967
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  1679.5557171753967
+
+
+Episode 4/50 @ Step 92
+Random 0.44 < 0.59 Epsilon (Get random action)
+Chosen action:  l_shipmode,DROP
+Dropped index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3048.955084738386
+Throughput@Size = 912.2796756908524
+QphH@Size = 1667.7828863197722
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  1667.7828863197722
+
+
+Episode 4/50 @ Step 93
+Random 0.39 < 0.59 Epsilon (Get random action)
+Chosen action:  l_linestatus,CREATE
+Created index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3098.0282086639113
+Throughput@Size = 908.7134863713525
+QphH@Size = 1677.8617387531604
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}
+Resulting reward:  1677.8617387531604
+
+
+Episode 4/50 @ Step 94
+Random 0.45 < 0.59 Epsilon (Get random action)
+Chosen action:  l_comment,DROP
+Dropped index on (lineitem) l_comment
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3102.4126018208
+Throughput@Size = 907.3219320709488
+QphH@Size = 1677.7624968884325
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1677.7624968884325
+
+
+Episode 4/50 @ Step 95
+Random 0.94 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3050.776533565824
+Throughput@Size = 915.5910148408024
+QphH@Size = 1671.3059511711308
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1671.3059511711308
+
+
+Episode 4/50 @ Step 96
+Random 0.55 < 0.59 Epsilon (Get random action)
+Chosen action:  l_returnflag,CREATE
+Created index on (lineitem) l_returnflag
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3040.79806238645
+Throughput@Size = 910.7800298699792
+QphH@Size = 1664.1809246860469
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1664.1809246860469
+
+
+Episode 4/50 @ Step 97
+Random 0.29 < 0.59 Epsilon (Get random action)
+Chosen action:  l_linestatus,DROP
+Dropped index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3136.6488891414588
+Throughput@Size = 907.386568336431
+QphH@Size = 1687.0545550142554
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1687.0545550142554
+
+
+Episode 4/50 @ Step 98
+Random 0.79 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 2975.645267190415
+Throughput@Size = 906.5592361457074
+QphH@Size = 1642.4368177999213
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1642.4368177999213
+
+
+Episode 4/50 @ Step 99
+Random 0.81 > 0.59 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1687.0545550142554
+Weights difference
+Prev: 154934.13923925118
+Curr: 175013.33371727233
+Diff: 141.70107437144276
+Plotting graphics...
+Total reward in episode 4: 248679.86971989245
+Epsilon = 0.558584313134885
+
+
+Episode 5/50 @ Step 0
+Random 0.16 < 0.56 Epsilon (Get random action)
+Chosen action:  l_extendedprice,CREATE
+Created index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3011.1008363507426
+Throughput@Size = 923.5539224642904
+QphH@Size = 1667.6072644202632
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1667.6072644202632
+
+
+Episode 5/50 @ Step 1
+Random 0.23 < 0.56 Epsilon (Get random action)
+Chosen action:  l_linestatus,CREATE
+Created index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 2989.70097300273
+Throughput@Size = 905.2584497563545
+QphH@Size = 1645.129802798404
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1645.129802798404
+
+
+Episode 5/50 @ Step 2
+Random 0.64 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3008.2938957015035
+Throughput@Size = 907.2032104729952
+QphH@Size = 1652.0090436274004
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1652.0090436274004
+
+
+Episode 5/50 @ Step 3
+Random 0.19 < 0.56 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,CREATE
+Created index on (lineitem) l_shipinstruct
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3013.1727648112264
+Throughput@Size = 896.9095214614314
+QphH@Size = 1643.9414048461263
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 1, 'l_comment': 0}
+Resulting reward:  1643.9414048461263
+
+
+Episode 5/50 @ Step 4
+Random 0.07 < 0.56 Epsilon (Get random action)
+Chosen action:  l_shipinstruct,DROP
+Dropped index on (lineitem) l_shipinstruct
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1652.0090436274004
+
+
+Episode 5/50 @ Step 5
+Random 0.26 < 0.56 Epsilon (Get random action)
+Chosen action:  l_quantity,CREATE
+Created index on (lineitem) l_quantity
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3012.0058337441283
+Throughput@Size = 912.000682227905
+QphH@Size = 1657.3929453358594
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 1, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1657.3929453358594
+
+
+Episode 5/50 @ Step 6
+Random 0.54 < 0.56 Epsilon (Get random action)
+Chosen action:  l_extendedprice,DROP
+Dropped index on (lineitem) l_extendedprice
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3126.8356909065633
+Throughput@Size = 920.2092139384484
+QphH@Size = 1696.273271982971
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1696.273271982971
+
+
+Episode 5/50 @ Step 7
+Random 0.93 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3086.069128805502
+Throughput@Size = 925.6392326238399
+QphH@Size = 1690.1439761782565
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1690.1439761782565
+
+
+Episode 5/50 @ Step 8
+Random 0.92 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1696.273271982971
+
+
+Episode 5/50 @ Step 9
+Random 0.26 < 0.56 Epsilon (Get random action)
+Chosen action:  l_receiptdate,CREATE
+Created index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3049.638438537102
+Throughput@Size = 901.3380544190491
+QphH@Size = 1657.9370243988697
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 1, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1657.9370243988697
+
+
+Episode 5/50 @ Step 10
+Random 0.10 < 0.56 Epsilon (Get random action)
+Chosen action:  l_shipmode,CREATE
+Created index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3083.626892842004
+Throughput@Size = 922.2866845634774
+QphH@Size = 1686.4127678092423
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1686.4127678092423
+
+
+Episode 5/50 @ Step 11
+Random 0.79 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3016.914256899681
+Throughput@Size = 921.5650393944517
+QphH@Size = 1667.417975796542
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 1, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1667.417975796542
+
+
+Episode 5/50 @ Step 12
+Random 0.45 < 0.56 Epsilon (Get random action)
+Chosen action:  l_receiptdate,DROP
+Dropped index on (lineitem) l_receiptdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3149.8084698595853
+Throughput@Size = 922.6539572133341
+QphH@Size = 1704.753134380466
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1704.753134380466
+
+
+Episode 5/50 @ Step 13
+Random 0.93 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3003.5467774709227
+Throughput@Size = 921.859248617068
+QphH@Size = 1663.985389198343
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1663.985389198343
+
+
+Episode 5/50 @ Step 14
+Random 0.87 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1704.753134380466
+
+
+Episode 5/50 @ Step 15
+Random 0.51 < 0.56 Epsilon (Get random action)
+Chosen action:  l_shipdate,CREATE
+Created index on (lineitem) l_shipdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3455.9445268659224
+Throughput@Size = 2023.8383411027385
+QphH@Size = 2644.6687955574735
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2644.6687955574735
+
+
+Episode 5/50 @ Step 16
+Random 0.59 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3456.8128589438275
+Throughput@Size = 2019.9384500132103
+QphH@Size = 2642.451363465509
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 1, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2642.451363465509
+
+
+Episode 5/50 @ Step 17
+Random 0.44 < 0.56 Epsilon (Get random action)
+Chosen action:  l_shipmode,DROP
+Dropped index on (lineitem) l_shipmode
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3516.4256191701393
+Throughput@Size = 2010.677641694435
+QphH@Size = 2659.022070451261
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2659.022070451261
+
+
+Episode 5/50 @ Step 18
+Random 0.46 < 0.56 Epsilon (Get random action)
+Chosen action:  l_quantity,DROP
+Dropped index on (lineitem) l_quantity
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2679.560275815559
+
+
+Episode 5/50 @ Step 19
+Random 0.04 < 0.56 Epsilon (Get random action)
+Chosen action:  l_tax,CREATE
+Created index on (lineitem) l_tax
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3554.297351245829
+Throughput@Size = 2021.6562467651731
+QphH@Size = 2680.5908757225598
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2680.5908757225598
+
+
+Episode 5/50 @ Step 20
+Random 0.81 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3479.553120980826
+Throughput@Size = 2011.1825420991322
+QphH@Size = 2645.3764365819825
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2645.3764365819825
+
+
+Episode 5/50 @ Step 21
+Random 0.51 < 0.56 Epsilon (Get random action)
+Chosen action:  l_tax,DROP
+Dropped index on (lineitem) l_tax
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2636.4968573381175
+
+
+Episode 5/50 @ Step 22
+Random 0.06 < 0.56 Epsilon (Get random action)
+Chosen action:  l_tax,CREATE
+Created index on (lineitem) l_tax
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2645.3764365819825
+
+
+Episode 5/50 @ Step 23
+Random 0.16 < 0.56 Epsilon (Get random action)
+Chosen action:  l_returnflag,CREATE
+Created index on (lineitem) l_returnflag
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3560.511198514649
+Throughput@Size = 1967.87488218791
+QphH@Size = 2647.0059605723877
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2647.0059605723877
+
+
+Episode 5/50 @ Step 24
+Random 0.08 < 0.56 Epsilon (Get random action)
+Chosen action:  l_commitdate,CREATE
+Created index on (lineitem) l_commitdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3543.5380877371313
+Throughput@Size = 1983.8558521486518
+QphH@Size = 2651.3899699344397
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2651.3899699344397
+
+
+Episode 5/50 @ Step 25
+Random 0.13 < 0.56 Epsilon (Get random action)
+Chosen action:  l_linestatus,DROP
+Dropped index on (lineitem) l_linestatus
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3624.7979894017126
+Throughput@Size = 2006.19467953367
+QphH@Size = 2696.673958920889
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2696.673958920889
+
+
+Episode 5/50 @ Step 26
+Random 0.98 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3427.2517563720294
+Throughput@Size = 2007.511788959306
+QphH@Size = 2623.0227419235875
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2623.0227419235875
+
+
+Episode 5/50 @ Step 27
+Random 0.62 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 0, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2696.673958920889
+
+
+Episode 5/50 @ Step 28
+Random 0.09 < 0.56 Epsilon (Get random action)
+Chosen action:  l_linestatus,CREATE
+Created index on (lineitem) l_linestatus
+State-reward in dictionary!
+Resulting state:  {'l_shipdate': 1, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2651.3899699344397
+
+
+Episode 5/50 @ Step 29
+Random 0.18 < 0.56 Epsilon (Get random action)
+Chosen action:  l_discount,CREATE
+Created index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3545.209334304982
+Throughput@Size = 1992.047272324925
+QphH@Size = 2657.484634804706
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2657.484634804706
+
+
+Episode 5/50 @ Step 30
+Random 0.18 < 0.56 Epsilon (Get random action)
+Chosen action:  l_quantity,CREATE
+Created index on (lineitem) l_quantity
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3459.6343836385186
+Throughput@Size = 2020.8281405932958
+QphH@Size = 2644.1116690905587
+Resulting state:  {'l_shipdate': 1, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  2644.1116690905587
+
+
+Episode 5/50 @ Step 31
+Random 0.06 < 0.56 Epsilon (Get random action)
+Chosen action:  l_shipdate,DROP
+Dropped index on (lineitem) l_shipdate
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3034.803490199866
+Throughput@Size = 918.6071805682989
+QphH@Size = 1669.6683136812928
+Resulting state:  {'l_shipdate': 0, 'l_discount': 1, 'l_extendedprice': 0, 'l_quantity': 1, 'l_returnflag': 1, 'l_linestatus': 1, 'l_tax': 1, 'l_commitdate': 1, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 0}
+Resulting reward:  1669.6683136812928
+
+
+Episode 5/50 @ Step 32
+Random 0.78 > 0.56 Epsilon (Get argmax action)
+Chosen action:  l_discount,DROP
+Dropped index on (lineitem) l_discount
+State-reward not in dictionary
+
+Starting benchmark...
