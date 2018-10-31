@@ -7,7 +7,7 @@ class Agent:
 
 
     MAX_TRAINING_EPISODES = 50
-    MAX_STEPS_PER_EPISODE = 100
+    MAX_STEPS_PER_EPISODE = 500
 
 
     def __init__(self):
@@ -181,6 +181,9 @@ class Agent:
                     for action in self.env.get_available_actions(self.state):
                         outfile.write(' | ' + str(repr(action)) + ': ' + str(prediction[action]))
                     outfile.write('\n')
+                # Write epsilon value to file
+                with open('data/epsilon_history.dat', 'a+') as outfile:
+                    outfile.write(str(self.epsilon) + '\n')
 
                 # Execute action in the environment
                 self.next_state, self.reward = self.env.step(self.action)

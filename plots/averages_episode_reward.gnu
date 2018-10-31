@@ -22,5 +22,5 @@ datafile = 'data/episode_reward_plot.dat'
 
 plot sum = init(0), \
      datafile using 0:1 title 'data' with lines linestyle 1, \
-     '' using 0:(sum = sum + $1, sum/($0+1)) title "cumulative mean" with lines linestyle 2,  \
+     '' using 0:(sum = sum + $1, sum/($0+1)) title "cumulative mean" with lines linestyle 2, \
      '' using 0:(avg5($1)) title "running mean over previous 5 points" with lines linestyle 3

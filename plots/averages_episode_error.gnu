@@ -19,6 +19,7 @@ shift5(x) = (back5 = back4, back4 = back3, back3 = back2, back2 = back1, back1 =
 init(x) = (back1 = back2 = back3 = back4 = back5 = sum = 0)
 
 datafile = 'data/episode_error_plot.dat'
+#datafile = 'data/errors_plot.dat'
 
 plot sum = init(0), \
      datafile using 0:1 title 'data' with lines linestyle 1, \
