@@ -41,6 +41,7 @@ class Environment:
 
     def get_available_actions(self, state):
         available_actions = list()
+        available_actions.append(Action('NO_OP', 'NO_OP', 'NO_OP'))
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 if state.indexes_map[table][column] == 0:

@@ -22,7 +22,7 @@ class Agent:
         
         self.alpha = 0.05 # Learning rate
         self.gamma = 0.8 # Discount factor
-        self.epsilon = 0.9 # Epsilon-greedy value
+        self.epsilon = 1.0 # Epsilon-greedy value
 
         self.action_weights = dict()
         self.prev_action_weights = dict()
@@ -165,6 +165,9 @@ class Agent:
             # Update statistics
             self.episode_reward[episode] = 0
 
+            # Update epsilon value
+            self.epsilon = 1 / (episode + 1)
+
             # Steps in each episode
             for step in range(self.MAX_STEPS_PER_EPISODE):
 
@@ -197,7 +200,7 @@ class Agent:
                 td_target = self.reward + self.gamma * self.max_a(self.state)
 
                 error = td_target - q_value
-                print("Error:", error)
+                print("TD target:", td_target, '| Q-value', q_value, '| Error:', error)
 
                 # Update action weights
                 self.update(self.state, self.action, td_target, q_value)
@@ -223,7 +226,7 @@ class Agent:
                     print("Total reward in episode {}: {}".format(episode, self.episode_reward[episode]))
 
                     # Decrease epsilon value by half
-                    self.epsilon = (80 - math.log(episode+1) * 15) * 0.01
+                    # self.epsilon = (80 - math.log(episode+1) * 15) * 0.01
                     print("Epsilon =", self.epsilon)
 
                     # Reset environment and attributes
