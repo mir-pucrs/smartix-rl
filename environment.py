@@ -75,6 +75,7 @@ class Environment:
 
     def get_action_space(self, state):
         action_space = list()
+        action_space.append(Action('NO_OP', 'NO_OP', 'NO_OP'))
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 action_space.append(Action(table, column, 'CREATE'))
