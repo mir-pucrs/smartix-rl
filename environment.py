@@ -46,8 +46,8 @@ class Environment:
             for column in columns.keys():
                 if state.indexes_map[table][column] == 0:
                     available_actions.append(Action(table, column, 'CREATE'))
-                else:
-                    available_actions.append(Action(table, column, 'DROP'))
+                # else:
+                    # available_actions.append(Action(table, column, 'DROP'))
         return available_actions
 
 
@@ -79,7 +79,7 @@ class Environment:
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 action_space.append(Action(table, column, 'CREATE'))
-                action_space.append(Action(table, column, 'DROP'))
+                # action_space.append(Action(table, column, 'DROP'))
         return action_space
 
 
