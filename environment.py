@@ -58,8 +58,8 @@ class Environment:
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
             print("State-reward not in dictionary")
-            # self.rewards[state] = randint(2500, 2550)
-            self.rewards[state] = self.benchmark.run()
+            self.rewards[state] = randint(2500, 2550)
+            # self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
 
         # Save reward to list for plotting
@@ -79,7 +79,7 @@ class Environment:
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 action_space.append(Action(table, column, 'CREATE'))
-                # action_space.append(Action(table, column, 'DROP'))
+                action_space.append(Action(table, column, 'DROP'))
         return action_space
 
 
@@ -175,11 +175,11 @@ class Environment:
             outfile.write(str(episode) + ', ' + repr(max_reward) + ', ' + str(self.rewards[max_reward]) + '\n')
 
         # Plot rewards
-        print("Plotting graphics...")
-        self.plot_rewards_history(episode)
-        self.plot_episode_reward(episode)
-        self.plot_weights_difference(episode)
-        self.plot_error(episode)
+        # print("Plotting graphics...")
+        # self.plot_rewards_history(episode)
+        # self.plot_episode_reward(episode)
+        # self.plot_weights_difference(episode)
+        # self.plot_error(episode)
 
 
 if __name__ == "__main__":

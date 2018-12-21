@@ -1,12 +1,13 @@
 from database import Database
 from state import State
+from action import Action
 
 import random, pprint, copy, math
 
 class Agent:
 
 
-    MAX_TRAINING_EPISODES = 25
+    MAX_TRAINING_EPISODES = 50
     MAX_STEPS_PER_EPISODE = 100
 
 
@@ -25,7 +26,10 @@ class Agent:
         self.epsilon = 0.9 # Epsilon value
 
         self.action_weights = dict()
+        self.features_exploration = dict()
+        self.exploration_threshold = 2
         self.prev_action_weights = dict()
+
 
 
 
@@ -109,7 +113,7 @@ class Agent:
 
 
 
-    def initialize_weights(self, state):
+    def weights_initialization(self, state):
         state_features = self.env.get_state_features(self.state)
         action_space = self.env.get_action_space(self.state)
 
@@ -119,6 +123,22 @@ class Agent:
             for f in state_features.keys():
                 self.action_weights[a][f] = random.random()
                 self.prev_action_weights[a][f] = 0.0
+
+
+
+    def weights_optimistic_initialization(self, state):
+        state_features = self.env.get_state_features(self.state)
+        action_space = self.env.get_action_space(self.state)
+
+        for a in action_space:
+            self.action_weights[a] = dict()
+            self.prev_action_weights[a] = dict()
+            for f in state_features.keys():
+                self.action_weights[a][f] = 1000.0
+                self.prev_action_weights[a][f] = 0.0
+        
+        for f in state_features.keys():
+                self.features_exploration[f] = 0
 
 
 
@@ -132,6 +152,8 @@ class Agent:
                 for feature, weight in weights.items():
                     prediction[action] += weight * state_features[feature]
         else:
+            if action.type == 'CREATE':
+                self.features_exploration[action.column] += 1
             prediction = 0.0
             for feature, value in self.action_weights[action].items():
                 prediction += value * state_features[feature]
@@ -144,8 +166,15 @@ class Agent:
         state_features = self.env.get_state_features(state)
 
         for weight in self.action_weights[action].keys():
-            partial_derivative = state_features[weight]
-            self.action_weights[self.action][weight] += self.alpha * (td_target - q_value) * partial_derivative
+            if self.features_exploration[weight] >= self.exploration_threshold or weight == 'Bias':
+                if weight == 'Bias':
+                    print('UPDATING BIAS!!!')
+                if self.features_exploration[weight] >= self.exploration_threshold:
+                    print('Feature explored!!!:', weight)
+                partial_derivative = state_features[weight]
+                self.action_weights[self.action][weight] += self.alpha * (td_target - q_value) * partial_derivative
+            else:
+                print('Feature not sufficiently explored:', weight)
     
 
 
@@ -155,7 +184,8 @@ class Agent:
         self.state = self.env.reset()
 
         # Initialize features' weights vector
-        self.initialize_weights(self.state)
+        # self.weights_initialization(self.state)
+        self.weights_optimistic_initialization(self.state)
 
         pprint.pprint(self.action_weights)
 
@@ -171,8 +201,21 @@ class Agent:
                 print("\n\nEpisode {}/{} @ Step {}".format(episode, self.MAX_TRAINING_EPISODES, step))
 
                 # Get action
-                self.action, action_type = self.get_action_epsilon_greedy(self.state)
-                print("Chosen action: ", self.action)
+                # self.action, action_type = self.get_action_epsilon_greedy(self.state)
+                # print("Chosen", action_type, "action:", self.action)
+                if step == 0:
+                    self.action = Action("lineitem", "l_returnflag", "CREATE")
+                if step == 1:
+                    self.action = Action("lineitem", "l_returnflag", "DROP")
+                if step == 2:
+                    self.action = Action("lineitem", "l_returnflag", "CREATE")
+                if step == 3:
+                    self.action = Action("lineitem", "l_returnflag", "DROP")
+                if step == 4:
+                    self.action = Action("lineitem", "l_returnflag", "CREATE")
+                if step == 5:
+                    self.action = Action("lineitem", "l_returnflag", "DROP")
+                action_type = 'WHATEVER'
 
                 # Write for every state which utility values are for each possible action
                 with open('data/state_utilities.csv', 'a+') as outfile:
