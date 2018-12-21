@@ -46,8 +46,8 @@ class Environment:
             for column in columns.keys():
                 if state.indexes_map[table][column] == 0:
                     available_actions.append(Action(table, column, 'CREATE'))
-                # else:
-                    # available_actions.append(Action(table, column, 'DROP'))
+                else:
+                    available_actions.append(Action(table, column, 'DROP'))
         return available_actions
 
 
@@ -58,8 +58,8 @@ class Environment:
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
             print("State-reward not in dictionary")
-            self.rewards[state] = randint(2500, 2550)
-            # self.rewards[state] = self.benchmark.run()
+            # self.rewards[state] = randint(2500, 2550)
+            self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
 
         # Save reward to list for plotting
