@@ -168,9 +168,9 @@ class Agent:
         for weight in self.action_weights[action].keys():
             if self.features_exploration[weight] >= self.exploration_threshold or weight == 'Bias':
                 if weight == 'Bias':
-                    print('UPDATING BIAS!!!')
+                    print('Updating bias...')
                 if self.features_exploration[weight] >= self.exploration_threshold:
-                    print('Feature explored!!!:', weight)
+                    print('Feature explored:', weight)
                 partial_derivative = state_features[weight]
                 self.action_weights[self.action][weight] += self.alpha * (td_target - q_value) * partial_derivative
             else:
@@ -201,21 +201,8 @@ class Agent:
                 print("\n\nEpisode {}/{} @ Step {}".format(episode, self.MAX_TRAINING_EPISODES, step))
 
                 # Get action
-                # self.action, action_type = self.get_action_epsilon_greedy(self.state)
-                # print("Chosen", action_type, "action:", self.action)
-                if step == 0:
-                    self.action = Action("lineitem", "l_returnflag", "CREATE")
-                if step == 1:
-                    self.action = Action("lineitem", "l_returnflag", "DROP")
-                if step == 2:
-                    self.action = Action("lineitem", "l_returnflag", "CREATE")
-                if step == 3:
-                    self.action = Action("lineitem", "l_returnflag", "DROP")
-                if step == 4:
-                    self.action = Action("lineitem", "l_returnflag", "CREATE")
-                if step == 5:
-                    self.action = Action("lineitem", "l_returnflag", "DROP")
-                action_type = 'WHATEVER'
+                self.action, action_type = self.get_action_epsilon_greedy(self.state)
+                print("Chosen", action_type, "action:", self.action)
 
                 # Write for every state which utility values are for each possible action
                 with open('data/state_utilities.csv', 'a+') as outfile:
