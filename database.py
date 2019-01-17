@@ -5,6 +5,7 @@ pyodbc.pooling = False
 
 class Database:
 
+    # Only primary and foreign keys
     tables = {
         'customer': ['c_custkey', 'c_nationkey'],
         'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
@@ -32,8 +33,6 @@ class Database:
         self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch1g;UID=dbuser;PWD=dbuser'
         # LOCAL
         # self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=root;PWD=root'
-        # self.conn = pyodbc.connect(self.connection_string)
-        # self.cur = self.conn.cursor()
 
 
     """

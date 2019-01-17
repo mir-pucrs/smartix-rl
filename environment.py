@@ -4,11 +4,10 @@ from state import State
 from action import Action
 from agent import Agent
 
-import time
 import json
+import matplotlib.pyplot as plt
 from pathlib import Path
 from random import randint
-import PyGnuplot as gp
 
 
 class Environment:
@@ -26,9 +25,8 @@ class Environment:
 
         # State-rewards file records to dict
         self.rewards_list = list()
-        self.rewards_archive = self.load_rewards_archive()
+        self.rewards_archive = dict()
         self.visited_states = list()
-
 
 
     def step(self, action):
@@ -38,18 +36,18 @@ class Environment:
         return state, reward
 
 
-
     def get_available_actions(self, state):
         available_actions = list()
-        available_actions.append(Action('NO_OP', 'NO_OP', 'NO_OP'))
+        available_actions.append(Action('PASS', 'PASS', 'PASS'))
+
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 if state.indexes_map[table][column] == 0:
                     available_actions.append(Action(table, column, 'CREATE'))
                 else:
                     available_actions.append(Action(table, column, 'DROP'))
+        
         return available_actions
-
 
 
     def get_reward(self, state):
@@ -72,16 +70,14 @@ class Environment:
         return self.rewards[state]
 
 
-
     def get_action_space(self, state):
         action_space = list()
-        action_space.append(Action('NO_OP', 'NO_OP', 'NO_OP'))
+        action_space.append(Action('PASS', 'PASS', 'PASS'))
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 action_space.append(Action(table, column, 'CREATE'))
                 action_space.append(Action(table, column, 'DROP'))
         return action_space
-
 
 
     def get_state_features(self, state):
@@ -93,76 +89,32 @@ class Environment:
         return state_features
 
 
-
     def reset(self):
         self.db.reset_indexes()
         return State()
 
 
-
     '''
         Data files and plots
     '''
-    def load_rewards_archive(self):
-        rewards_archive = Path("/path/to/file")
-        if rewards_archive.is_file():
-            with open(rewards_archive, 'r') as infile:
-                return json.load(infile)
-        else:
-            return dict()
-
     def dump_rewards_archive(self):
         with open('data/rewards_archive.json', 'w+') as outfile:
             json.dump(self.rewards_archive, outfile)
 
-    def dump_rewards_history_to_plot(self, rewards):
+    def dump_rewards_history(self, rewards):
         with open('data/rewards_history_plot.dat', 'w+') as outfile:
             for value in rewards:
                 outfile.write(str(value) + '\n')
 
-    def dump_episode_reward_to_plot(self, episode_reward):
-        with open('data/episode_reward_plot.dat', 'a+') as outfile:
-            outfile.write(str(episode_reward) + '\n')
-
-    def dump_weights_difference_to_plot(self, weights_difference):
-        with open('data/weights_difference_plot.dat', 'a+') as outfile:
-            outfile.write(str(weights_difference) + '\n')
-
-    def plot_rewards_history(self, episode):
-        with open("plots/averages_rewards_history.gnu") as f: 
-            gp.c(f.read())
-            gp.pdf('plots/rewards_history_plot_%d.pdf' % episode)
-    
-    def plot_episode_reward(self, episode):
-        with open("plots/averages_episode_reward.gnu") as f: 
-            gp.c(f.read())
-            gp.pdf('plots/episode_reward_plot_%d.pdf' % episode)
-
-    def plot_weights_difference(self, episode):
-        with open("plots/averages_weights_difference.gnu") as f: 
-            gp.c(f.read())
-            gp.pdf('plots/weights_difference_plot_%d.pdf' % episode)
-
-    def plot_error(self, episode):
-        with open("plots/averages_episode_error.gnu") as f: 
-            gp.c(f.read())
-            gp.pdf('plots/episode_error_plot_%d.pdf' % episode)
-
-    def post_episode(self, episode, episode_reward, weights_difference):
+    def post_episode(self, episode, episode_reward):
         # Dump rewards archive
         self.dump_rewards_archive()
 
         # Dump computed state-rewards up to now
-        self.dump_rewards_history_to_plot(self.rewards_list)
-
-        # Dump total episode reward
-        self.dump_episode_reward_to_plot(episode_reward)
-
-        # Dump weights difference to plot
-        self.dump_weights_difference_to_plot(weights_difference)
+        self.dump_rewards_history(self.rewards_list)
 
         # Write episode rewards to file
-        with open('data/episode_reward.csv', 'a+') as f:
+        with open('data/episode_reward.dat', 'a+') as f:
             f.write(str(episode) + ', ' + str(episode_reward) + '\n')
         
         # Write number of visited distinct states
@@ -171,23 +123,12 @@ class Environment:
 
         # Write highest state reward to file
         max_reward = max(self.rewards, key = lambda x: self.rewards.get(x))
-        with open('data/max_reward.csv', 'a+') as outfile:
+        with open('data/max_reward.dat', 'a+') as outfile:
             outfile.write(str(episode) + ', ' + repr(max_reward) + ', ' + str(self.rewards[max_reward]) + '\n')
 
-        # Plot rewards
-        # print("Plotting graphics...")
-        # self.plot_rewards_history(episode)
-        # self.plot_episode_reward(episode)
-        # self.plot_weights_difference(episode)
-        # self.plot_error(episode)
 
 
 if __name__ == "__main__":
     agent = Agent()
     env = Environment()
-
-    start_time = time.time()
     agent.train(env)
-    elapsed_time = time.time() - start_time
-
-    print("It took %.2f seconds to train.", elapsed_time)

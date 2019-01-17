@@ -120,12 +120,9 @@ class TPCH:
         refresh_streams_duration = []
 
         # RUNS A NUMBER OF REFRESH STREAMS ACCORDING TO SCALE FACTOR
-        for i in range(self.NUM_STREAMS):
-            # print("\n*** Loading refresh stream data... (RS%d)" % i)
+        for _ in range(self.NUM_STREAMS):
             self.__load_refresh_stream_data()
-            # print("*** Start insert refresh function (RS%d)" % i)
             refresh_streams_duration.append(self.__insert_refresh_function())
-            # print("*** Start delete refresh function (RS%d)" % i)
             refresh_streams_duration.append(self.__delete_refresh_function())
 
         # print("\n*** Refresh streams finished")

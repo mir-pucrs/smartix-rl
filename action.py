@@ -32,7 +32,7 @@ class Action:
         elif self.type == 'CREATE':
             self.db.create_index(self.column, self.table)
         else:
-            print("NO_OP action!")
+            print("PASS action!")
 
 
 
