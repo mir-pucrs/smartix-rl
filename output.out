@@ -1,0 +1,22 @@
+
+
+Episode 0/50 @ Step 0
+Random 0.25 < 0.90 Epsilon (Get random action)
+Created index on (lineitem) l_comment
+State-reward not in dictionary
+
+Starting benchmark...
+Power@Size = 3101.5056616107654
+Throughput@Size = 952.3892124858088
+QphH@Size = 1718.6740629280919
+Resulting reward:  1718.6740629280919
+Resulting state:  {'customer': {'c_mktsegment': 0, 'c_name': 0, 'c_address': 0, 'c_phone': 0, 'c_acctbal': 0, 'c_comment': 0}, 'lineitem': {'l_shipdate': 0, 'l_discount': 0, 'l_extendedprice': 0, 'l_quantity': 0, 'l_returnflag': 0, 'l_linestatus': 0, 'l_tax': 0, 'l_commitdate': 0, 'l_receiptdate': 0, 'l_shipmode': 0, 'l_shipinstruct': 0, 'l_comment': 1}, 'nation': {'n_name': 0, 'n_comment': 0}, 'orders': {'o_orderdate': 0, 'o_orderpriority': 0, 'o_shippriority': 0, 'o_clerk': 0, 'o_orderstatus': 0, 'o_totalprice': 0, 'o_comment': 0}, 'part': {'p_type': 0, 'p_size': 0, 'p_brand': 0, 'p_name': 0, 'p_container': 0, 'p_mfgr': 0, 'p_retailprice': 0, 'p_comment': 0}, 'partsupp': {'ps_supplycost': 0, 'ps_availqty': 0, 'ps_comment': 0}, 'region': {'r_name': 0, 'r_comment': 0}, 'supplier': {'s_comment': 0, 's_name': 0, 's_address': 0, 's_phone': 0, 's_acctbal': 0}}
+TD target: 1744.1561996511482 | Q-value 24.923178590788066 | Error: 1719.2330210603602
+
+
+Episode 0/50 @ Step 1
+Random 0.69 < 0.90 Epsilon (Get random action)
+Created index on (region) r_name
+State-reward not in dictionary
+
+Starting benchmark...

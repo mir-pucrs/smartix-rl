@@ -3,7 +3,7 @@ from state import State
 from action import Action
 
 import random, pprint, copy, math, time
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 class Agent:
 
@@ -213,10 +213,10 @@ class Agent:
                 # Update statistics
                 self.episode_reward[episode] += self.reward
 
-                plt.plot(self.episode_reward[episode])
-                plt.ylabel('TD error')
-                plt.xlabel('Step')
-                plt.savefig("td_error.png", bbox_inches="tight")
+                # plt.plot(self.episode_reward[episode])
+                # plt.ylabel('TD error')
+                # plt.xlabel('Step')
+                # plt.savefig("td_error.png", bbox_inches="tight")
                 # plt.draw()
                 # plt.pause(0.001)
 

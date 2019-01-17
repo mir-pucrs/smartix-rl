@@ -5,7 +5,7 @@ from action import Action
 from agent import Agent
 
 import json
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from pathlib import Path
 from random import randint
 
