@@ -3,7 +3,6 @@ from state import State
 from action import Action
 
 import random, pprint, copy, math, time
-# import matplotlib.pyplot as plt
 
 class Agent:
 
@@ -203,6 +202,8 @@ class Agent:
                 # Calculate and print TD error
                 td_error = td_target - q_value
                 print("TD target:", td_target, '| Q-value', q_value, '| Error:', td_error)
+                with open('data/errors.dat', 'a+') as f:
+                    f.write(str(td_error) + '\n')
 
                 # Update action weights
                 self.update(self.state, self.action, td_target, q_value)
@@ -212,13 +213,6 @@ class Agent:
 
                 # Update statistics
                 self.episode_reward[episode] += self.reward
-
-                # plt.plot(self.episode_reward[episode])
-                # plt.ylabel('TD error')
-                # plt.xlabel('Step')
-                # plt.savefig("td_error.png", bbox_inches="tight")
-                # plt.draw()
-                # plt.pause(0.001)
 
                 # If episode's last execution
                 if step+1 == self.MAX_STEPS_PER_EPISODE:
