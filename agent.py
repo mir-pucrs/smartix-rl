@@ -196,12 +196,13 @@ class Agent:
                 # Predict Q-Value for previous state-action
                 q_value = self.predict(self.state, self.action)
 
+                best_next_state = self.max_a(self.next_state)
                 # TD target (what really happened)
-                td_target = self.reward + self.gamma * self.max_a(self.next_state)
+                td_target = self.reward + self.gamma * best_next_state
 
                 # Calculate and print TD error
                 td_error = td_target - q_value
-                print("TD target:", td_target, '| Q-value', q_value, '| Error:', td_error)
+                print("TD target:", td_target, '| Q-value', q_value, '| Error:', td_error, "| Max_a:", best_next_state)
                 with open('data/errors.dat', 'a+') as f:
                     f.write(str(td_error) + '\n')
 
@@ -211,7 +212,7 @@ class Agent:
                 # Update current state
                 self.state = self.next_state
 
-                # Update statistics
+                # Update episode stats
                 self.episode_reward[episode] += self.reward
 
                 # If episode's last execution
@@ -220,13 +221,13 @@ class Agent:
                     # Calculate episode duration
                     self.episode_duration[episode] = time.time() - episode_start_time
 
-                    # Save data
-                    self.env.post_episode(episode, self.episode_reward[episode], self.episode_duration[episode])
-
                     print("\n\n\n### FINISHED EPISODE %s ###" % episode)
                     print("Epsilon:", self.epsilon)
                     print("Reward:", self.episode_reward[episode])
                     print("Duration:", self.episode_duration[episode])
+
+                    # Save data
+                    self.env.post_episode(episode, self.episode_reward[episode], self.episode_duration[episode])
 
                     # Decrease epsilon value by 20%
                     self.epsilon -= self.epsilon * 0.2

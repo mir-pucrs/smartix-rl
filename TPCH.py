@@ -22,7 +22,7 @@ class TPCH:
         Global configuration
     '''
     # SERVER
-    DB_CONFIG = {'user': 'dbuser', 'password': 'dbuser', 'host': '127.0.0.1', 'database': 'tpch1g'}
+    DB_CONFIG = {'user': 'dbuser', 'password': 'dbuser', 'host': '127.0.0.1', 'database': 'tpch'}
     REFRESH_FILES_PATH = '/home/sap-server/smartix/tpch-tools/dbgen/%d' % SCALE_FACTOR
     # LOCAL
     # DB_CONFIG = {'user': 'root', 'password': 'root', 'host': '127.0.0.1', 'database': 'tpch'}

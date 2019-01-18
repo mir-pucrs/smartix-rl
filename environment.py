@@ -43,8 +43,8 @@ class Environment:
             for column in columns.keys():
                 if state.indexes_map[table][column] == 0:
                     available_actions.append(Action(table, column, 'CREATE'))
-                else:
-                    available_actions.append(Action(table, column, 'DROP'))
+                # else:
+                    # available_actions.append(Action(table, column, 'DROP'))
         
         return available_actions
 
@@ -75,7 +75,7 @@ class Environment:
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 action_space.append(Action(table, column, 'CREATE'))
-                action_space.append(Action(table, column, 'DROP'))
+                # action_space.append(Action(table, column, 'DROP'))
         return action_space
 
 
@@ -105,7 +105,7 @@ class Environment:
             for value in rewards:
                 outfile.write(str(value) + '\n')
 
-    def post_episode(self, episode, episode_reward):
+    def post_episode(self, episode, episode_reward, episode_duration):
         # Dump rewards archive
         self.dump_rewards_archive()
 
@@ -115,6 +115,10 @@ class Environment:
         # Write episode rewards to file
         with open('data/episode_reward.dat', 'a+') as f:
             f.write(str(episode) + ', ' + str(episode_reward) + '\n')
+
+        # Write episode duration to file
+        with open('data/episode_duration.dat', 'a+') as f:
+            f.write(str(episode) + ', ' + str(episode_duration) + '\n')
         
         # Write number of visited distinct states
         with open('data/visited_distinct_states.dat', 'a+') as f:
