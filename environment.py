@@ -105,7 +105,7 @@ class Environment:
             for value in rewards:
                 outfile.write(str(value) + '\n')
 
-    def post_episode(self, episode, episode_reward, episode_duration):
+    def post_episode(self, episode, episode_reward, episode_duration, episode_mse):
         # Dump rewards archive
         self.dump_rewards_archive()
 
@@ -119,6 +119,10 @@ class Environment:
         # Write episode duration to file
         with open('data/episode_duration.dat', 'a+') as f:
             f.write(str(episode) + ', ' + str(episode_duration) + '\n')
+        
+        # Write episode MSE to file
+        with open('data/episode_mse.dat', 'a+') as f:
+            f.write(str(episode) + ', ' + str(episode_mse) + '\n')
         
         # Write number of visited distinct states
         with open('data/visited_distinct_states.dat', 'a+') as f:

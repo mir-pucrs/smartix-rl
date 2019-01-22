@@ -6,27 +6,28 @@ pyodbc.pooling = False
 class Database:
 
     # Only primary and foreign keys
-    tables = {
-        'customer': ['c_custkey', 'c_nationkey'],
-        'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
-        'nation': ['n_nationkey', 'n_regionkey'],
-        'orders': ['o_orderkey', 'o_custkey'],
-        'part': ['p_partkey'],
-        'partsupp': ['ps_partkey', 'ps_suppkey'],
-        'region': ['r_regionkey'],
-        'supplier': ['s_suppkey', 's_nationkey']
-    }
-
     # tables = {
-    #     'customer': ['c_custkey', 'c_nationkey', 'c_name', 'c_address', 'c_comment'],
-    #     'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey', 'l_extendedprice', 'l_linestatus', 'l_tax', 'l_linenumber', 'l_comment'],
-    #     'nation': ['n_nationkey', 'n_regionkey', 'n_comment'],
-    #     'orders': ['o_orderkey', 'o_custkey', 'o_orderpriority', 'o_shippriority', 'o_clerk', 'o_totalprice'],
-    #     'part': ['p_partkey', 'p_mfgr', 'p_retailprice', 'p_comment'],
-    #     'partsupp': ['ps_partkey', 'ps_suppkey', 'ps_comment'],
-    #     'region': ['r_regionkey', 'r_comment'],
-    #     'supplier': ['s_suppkey', 's_nationkey', 's_name', 's_address', 's_phone', 's_acctbal']
+    #     'customer': ['c_custkey', 'c_nationkey'],
+    #     'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
+    #     'nation': ['n_nationkey', 'n_regionkey'],
+    #     'orders': ['o_orderkey', 'o_custkey'],
+    #     'part': ['p_partkey'],
+    #     'partsupp': ['ps_partkey', 'ps_suppkey'],
+    #     'region': ['r_regionkey'],
+    #     'supplier': ['s_suppkey', 's_nationkey']
     # }
+
+    # Only columns used in queries
+    tables = {
+        'customer': ['c_custkey', 'c_nationkey', 'c_name', 'c_address', 'c_comment'],
+        'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey', 'l_extendedprice', 'l_linestatus', 'l_tax', 'l_linenumber', 'l_comment'],
+        'nation': ['n_nationkey', 'n_regionkey', 'n_comment'],
+        'orders': ['o_orderkey', 'o_custkey', 'o_orderpriority', 'o_shippriority', 'o_clerk', 'o_totalprice'],
+        'part': ['p_partkey', 'p_mfgr', 'p_retailprice', 'p_comment'],
+        'partsupp': ['ps_partkey', 'ps_suppkey', 'ps_comment'],
+        'region': ['r_regionkey', 'r_comment'],
+        'supplier': ['s_suppkey', 's_nationkey', 's_name', 's_address', 's_phone', 's_acctbal']
+    }
 
     def __init__(self):
         # SERVER

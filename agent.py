@@ -15,6 +15,7 @@ class Agent:
         # Stats attributes
         self.episode_reward = dict()
         self.episode_duration = dict()
+        self.episode_mse = dict()
 
         # Agent attributes
         self.state = None
@@ -177,7 +178,8 @@ class Agent:
         for episode in range(self.MAX_TRAINING_EPISODES):
 
             # Update statistics
-            self.episode_reward[episode] = 0
+            self.episode_reward[episode] = 0.0
+            self.episode_mse[episode] = 0.0
             episode_start_time = time.time()
 
             # Steps in each episode
@@ -202,7 +204,8 @@ class Agent:
 
                 # Calculate and print TD error
                 td_error = td_target - q_value
-                print("TD target:", td_target, '| Q-value', q_value, '| Error:', td_error, "| Max_a:", best_next_state)
+                self.episode_mse[episode] += td_error**2
+                print("TD target:", td_target, '| Q-value', q_value, '| TD error:', td_error, "| Max_a:", best_next_state)
                 with open('data/errors.dat', 'a+') as f:
                     f.write(str(td_error) + '\n')
 
@@ -220,6 +223,7 @@ class Agent:
 
                     # Calculate episode duration
                     self.episode_duration[episode] = time.time() - episode_start_time
+                    self.episode_mse[episode] /= self.MAX_STEPS_PER_EPISODE
 
                     print("\n\n\n### FINISHED EPISODE %s ###" % episode)
                     print("Epsilon:", self.epsilon)
@@ -227,7 +231,7 @@ class Agent:
                     print("Duration:", self.episode_duration[episode])
 
                     # Save data
-                    self.env.post_episode(episode, self.episode_reward[episode], self.episode_duration[episode])
+                    self.env.post_episode(episode, self.episode_reward[episode], self.episode_duration[episode], self.episode_mse[episode])
 
                     # Decrease epsilon value by 20%
                     self.epsilon -= self.epsilon * 0.2
