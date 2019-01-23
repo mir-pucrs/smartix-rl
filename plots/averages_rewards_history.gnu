@@ -21,11 +21,15 @@ shift5(x) = (back5 = back4, back4 = back3, back3 = back2, back2 = back1, back1 =
 init(x) = (back1 = back2 = back3 = back4 = back5 = sum = 0)
 
 datafile = 'data/rewards_history_plot.dat'
-epsilon = 'data/epsilon_history.dat'
 
-plot sum = init(0), \
+# plot sum = init(0), \
      datafile using 0:1 title 'data' with lines linestyle 1, \
      '' using 0:(sum = sum + $1, sum/($0+1)) title "cumulative mean" with lines linestyle 2, \
      '' using 0:(avg5($1)) title "running mean over previous 5 points" with lines linestyle 3, \
      2982.04 title 'expert-based' linestyle 4, \
      epsilon using 0:1 title 'epsilon value' with lines linestyle 5
+    
+plot sum = init(0), \
+     datafile using 0:1 title 'data' with lines linestyle 1, \
+     '' using 0:(sum = sum + $1, sum/($0+1)) title "cumulative mean" with lines linestyle 2, \
+     '' using 0:(avg5($1)) title "running mean over previous 5 points" with lines linestyle 3

@@ -23,8 +23,8 @@ class Agent:
         self.reward = 0.0
         self.action = None
         
-        self.alpha = 0.1 # Learning rate
-        self.gamma = 0.9 # Discount factor
+        self.alpha = 0.9 # Learning rate
+        self.gamma = 0.8 # Discount factor
         self.epsilon = 0.9 # Epsilon value
 
         self.action_weights = dict()
