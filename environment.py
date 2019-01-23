@@ -37,14 +37,14 @@ class Environment:
 
     def get_available_actions(self, state):
         available_actions = list()
-        available_actions.append(Action('PASS', 'PASS', 'PASS'))
+        # available_actions.append(Action('PASS', 'PASS', 'PASS'))
 
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 if state.indexes_map[table][column] == 0:
                     available_actions.append(Action(table, column, 'CREATE'))
                 # else:
-                    # available_actions.append(Action(table, column, 'DROP'))
+                    available_actions.append(Action(table, column, 'DROP'))
         
         return available_actions
 
@@ -71,11 +71,11 @@ class Environment:
 
     def get_action_space(self, state):
         action_space = list()
-        action_space.append(Action('PASS', 'PASS', 'PASS'))
+        # action_space.append(Action('PASS', 'PASS', 'PASS'))
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
                 action_space.append(Action(table, column, 'CREATE'))
-                # action_space.append(Action(table, column, 'DROP'))
+                action_space.append(Action(table, column, 'DROP'))
         return action_space
 
 
