@@ -84,7 +84,7 @@ class Environment:
         state_features['Bias'] = 1.0
         for table, columns in state.indexes_map.items():
             for column in columns.keys():
-                state_features[column] = state.indexes_map[table][column] + 1.0
+                state_features[column] = state.indexes_map[table][column]
         return state_features
 
 
