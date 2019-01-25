@@ -25,11 +25,10 @@ class Agent:
         
         self.alpha = 0.01 # Learning rate
         self.gamma = 0.8 # Discount factor
-        self.epsilon = 0.9 # Epsilon value
+        self.epsilon = 0.9 # Exploration probability
 
         self.action_weights = dict()
-        # self.features_exploration = dict()
-        # self.exploration_threshold = 2
+        self.feature_weights = dict()
 
 
     def argmax_a(self, state):
@@ -84,61 +83,11 @@ class Agent:
 
     def weights_initialization(self, state):
         state_features = self.env.get_state_features(self.state)
-        action_space = self.env.get_action_space(self.state)
-
+        action_space = self.env.get_action_space(state)
+        for feature in state_features.keys():
+            self.feature_weights[feature] = random.random()
         for action in action_space:
-            self.action_weights[action] = dict()
-            for feature in state_features.keys():
-                self.action_weights[action][feature] = random.random()
-
-
-    # def weights_optimistic_initialization(self, state):
-    #     state_features = self.env.get_state_features(self.state)
-    #     action_space = self.env.get_action_space(self.state)
-
-    #     for a in action_space:
-    #         self.action_weights[a] = dict()
-    #         self.prev_action_weights[a] = dict()
-    #         for f in state_features.keys():
-    #             self.action_weights[a][f] = 1000.0
-    #             self.prev_action_weights[a][f] = 0.0
-        
-    #     for f in state_features.keys():
-    #             self.features_exploration[f] = 0
-
-
-    # def predict_optimistic(self, state, action = None):
-    #     state_features = self.env.get_state_features(state)
-
-    #     if action == None:
-    #         prediction = dict()
-    #         for action, weights in self.action_weights.items():
-    #             prediction[action] = 0.0
-    #             for feature, weight in weights.items():
-    #                 prediction[action] += weight * state_features[feature]
-    #     else:
-    #         if action.type == 'CREATE':
-    #             self.features_exploration[action.column] += 1
-    #         prediction = 0.0
-    #         for feature, value in self.action_weights[action].items():
-    #             prediction += value * state_features[feature]
-
-    #     return prediction
-
-
-    # def update_optimistic(self, state, action, td_target, q_value):
-    #     state_features = self.env.get_state_features(state)
-
-    #     for weight in self.action_weights[action].keys():
-    #         if self.features_exploration[weight] >= self.exploration_threshold or weight == 'Bias':
-    #             if weight == 'Bias':
-    #                 print('Updating bias...')
-    #             if self.features_exploration[weight] >= self.exploration_threshold:
-    #                 print('Feature explored:', weight)
-    #             partial_derivative = state_features[weight]
-    #             self.action_weights[self.action][weight] += self.alpha * (td_target - q_value) * partial_derivative
-    #         else:
-    #             print('Feature not sufficiently explored:', weight)
+            self.action_weights[action] = random.random()
 
 
     def predict(self, state, action = None):
@@ -146,14 +95,14 @@ class Agent:
 
         if action == None:
             prediction = dict()
-            for action, weights in self.action_weights.items():
-                prediction[action] = 0.0
-                for feature, weight in weights.items():
-                    prediction[action] += weight * state_features[feature]
+            for action, action_weight in self.action_weights.items():
+                prediction[action] = action_weight
+                for feature, feature_weight in self.feature_weights.items():
+                    prediction[action] += feature_weight * state_features[feature]
         else:
-            prediction = 0.0
-            for feature, value in self.action_weights[action].items():
-                prediction += value * state_features[feature]
+            prediction = self.action_weights[action]
+            for feature, feature_weight in self.feature_weights.items():
+                prediction += feature_weight * state_features[feature]
 
         return prediction
 
@@ -161,9 +110,22 @@ class Agent:
     def update(self, state, action, td_target, q_value):
         state_features = self.env.get_state_features(state)
 
-        for weight in self.action_weights[action].keys():
+        # print("\n\n\nBEFOREEEEEEEEEEEEEEEEEEEEE UPDATING!!!!!!!!!!!!!!!!!!!!!")
+        # pprint.pprint(self.action_weights)
+        # pprint.pprint(self.feature_weights)
+        # print("\n\n\nUPDATING!!!!!!!!!!!!!!!!!!!!!")
+
+        self.action_weights[action] += self.alpha * (td_target - q_value)
+
+        for weight in self.feature_weights.keys():
             feature = state_features[weight]
-            self.action_weights[action][weight] += self.alpha * (td_target - q_value) * feature
+            print("Updating feature:", weight, "-", feature)
+            self.feature_weights[weight] += self.alpha * (td_target - q_value) * feature
+        
+        # pprint.pprint(self.action_weights)
+        # pprint.pprint(self.feature_weights)
+
+        # print("FINISH UPDATE!!!!!!!\n\n\n")
 
 
     def train(self, env):
@@ -173,6 +135,9 @@ class Agent:
 
         # Initialize features' weights vector
         self.weights_initialization(self.state)
+
+        pprint.pprint(self.action_weights)
+        pprint.pprint(self.feature_weights)
 
         # Episodes loop
         for episode in range(self.MAX_TRAINING_EPISODES):
@@ -229,6 +194,10 @@ class Agent:
                     print("Epsilon:", self.epsilon)
                     print("Reward:", self.episode_reward[episode])
                     print("Duration:", self.episode_duration[episode])
+                    print("Feature weights:")
+                    pprint.pprint(self.feature_weights)
+                    print("Action weights:")
+                    pprint.pprint(self.action_weights)
 
                     # Save data
                     self.env.post_episode(episode, self.episode_reward[episode], self.episode_duration[episode], self.episode_mse[episode])
