@@ -55,7 +55,7 @@ class Environment:
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
             print("State-reward not in dictionary")
-            # self.rewards[state] = randint(2500, 2550)
+            # self.rewards[state] = randint(2500, 2525)
             self.rewards[state] = self.benchmark.run()
             self.rewards_archive[repr(state)] = self.rewards[state]
 

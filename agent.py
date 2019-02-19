@@ -30,6 +30,11 @@ class Agent:
         self.action_weights = dict()
         self.feature_weights = dict()
 
+        self.frozen_action_weights = dict()
+        self.frozen_feature_weights = dict()
+
+        self.replay_memory = list()
+    
 
     def argmax_a(self, state):
         a = None
@@ -60,6 +65,34 @@ class Agent:
             max_value = 0.0
         
         return max_value
+    
+
+    def max_a_replay(self, state):
+        max_value = float('-inf')
+
+        q_values = self.predict_replay(state)
+
+        for action in self.env.get_available_actions(state):
+            q_value = q_values[action]
+            if q_value > max_value:
+                max_value = q_value
+
+        if max_value == float('-inf'): 
+            max_value = 0.0
+        
+        return max_value
+    
+
+    def predict_replay(self, state):
+        state_features = self.env.get_state_features(state)
+
+        prediction = dict()
+        for action, action_weight in self.frozen_action_weights.items():
+            prediction[action] = action_weight
+            for feature, feature_weight in self.frozen_feature_weights.items():
+                prediction[action] += feature_weight * state_features[feature]
+
+        return prediction
 
 
     def get_random_action(self, state):
@@ -72,10 +105,14 @@ class Agent:
         rand = random.random()
 
         if rand > self.epsilon: # EXPLOIT
-            print("Random %.2f > %.2f Epsilon (Get argmax action)" % (rand, self.epsilon))
+            # Log action type
+            print("action_type = argmax")
+            # print("Random %.2f > %.2f Epsilon (Get argmax action)" % (rand, self.epsilon))
             action = self.argmax_a(state)
         else: # EXPLORE
-            print("Random %.2f < %.2f Epsilon (Get random action)" % (rand, self.epsilon))
+            # Log action type
+            print("action_type = random")
+            # print("Random %.2f < %.2f Epsilon (Get random action)" % (rand, self.epsilon))
             action = self.get_random_action(state)
 
         return action
@@ -109,23 +146,23 @@ class Agent:
 
     def update(self, state, action, td_target, q_value):
         state_features = self.env.get_state_features(state)
-
-        # print("\n\n\nBEFOREEEEEEEEEEEEEEEEEEEEE UPDATING!!!!!!!!!!!!!!!!!!!!!")
-        # pprint.pprint(self.action_weights)
-        # pprint.pprint(self.feature_weights)
-        # print("\n\n\nUPDATING!!!!!!!!!!!!!!!!!!!!!")
-
         self.action_weights[action] += self.alpha * (td_target - q_value)
 
         for weight in self.feature_weights.keys():
             feature = state_features[weight]
-            print("Updating feature:", weight, "-", feature)
             self.feature_weights[weight] += self.alpha * (td_target - q_value) * feature
-        
-        # pprint.pprint(self.action_weights)
-        # pprint.pprint(self.feature_weights)
+    
 
-        # print("FINISH UPDATE!!!!!!!\n\n\n")
+    def experience_replay(self):
+        samples = [random.choice(self.replay_memory) for _ in range(32)]
+        # sample = [state, action, reward, next_state]
+        for sample in samples:
+            # Calculate TD target w.r.t. old frozen weights
+            td_target = sample[2] + self.gamma * self.max_a_replay(sample[3])
+            # Predict Q-value w.r.t. newest weights
+            q_value = self.predict(sample[0], sample[1])
+            # Perform gradient descent
+            self.update(sample[0], sample[1], td_target, q_value)
 
 
     def train(self, env):
@@ -147,18 +184,33 @@ class Agent:
             self.episode_mse[episode] = 0.0
             episode_start_time = time.time()
 
+            # Log episode
+            print("episode =", episode)
+
             # Steps in each episode
             for step in range(self.MAX_STEPS_PER_EPISODE):
 
-                print("\n\nEpisode {}/{} @ Step {}".format(episode, self.MAX_TRAINING_EPISODES, step))
+                # Log step
+                print("step =", step)
+                # print("\n\nEpisode {}/{} @ Step {}".format(episode, self.MAX_TRAINING_EPISODES, step))
 
                 # Get action
                 self.action = self.get_action_epsilon_greedy(self.state)
 
+                # Log action
+                print("action =", repr(self.action))
+
                 # Execute action in the environment
                 self.next_state, self.reward = self.env.step(self.action)
-                print("Resulting reward: ", self.reward)
-                print("Resulting state: ", self.next_state)
+
+                # Log reward and next state
+                print("reward =", self.reward)
+                print("state =", repr(self.state))
+                # print("Resulting reward: ", self.reward)
+                # print("Resulting state: ", self.next_state)
+
+                # Store experience
+                self.replay_memory.append([self.state, self.action, self.reward, self.next_state])
 
                 # Predict Q-Value for previous state-action
                 q_value = self.predict(self.state, self.action)
@@ -170,7 +222,14 @@ class Agent:
                 # Calculate and print TD error
                 td_error = td_target - q_value
                 self.episode_mse[episode] += td_error**2
-                print("TD target:", td_target, '| Q-value', q_value, '| TD error:', td_error, "| Max_a:", best_next_state)
+
+                # Log TD target, Q-value, TD error and Max_a
+                print("td_target =", td_target)
+                print("q_value =", q_value)
+                print("td_error =", td_error)
+                print("max_a =", best_next_state)
+                # print("TD target:", td_target, '| Q-value', q_value, '| TD error:', td_error, "| Max_a:", best_next_state)
+
                 with open('data/errors.dat', 'a+') as f:
                     f.write(str(td_error) + '\n')
 
@@ -180,11 +239,19 @@ class Agent:
                 # Update current state
                 self.state = self.next_state
 
+                # Perform experience replay
+                if episode > 0:
+                    self.experience_replay()
+
                 # Update episode stats
                 self.episode_reward[episode] += self.reward
 
                 # If episode's last execution
                 if step+1 == self.MAX_STEPS_PER_EPISODE:
+
+                    # Save weights for experience replay
+                    self.frozen_action_weights = self.action_weights
+                    self.frozen_feature_weights = self.feature_weights
 
                     # Calculate episode duration
                     self.episode_duration[episode] = time.time() - episode_start_time
