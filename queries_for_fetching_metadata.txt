@@ -1,0 +1,31 @@
+-- GET SIZE OF EACH INDEX
+SELECT database_name, table_name, index_name, 
+round( stat_value * @@innodb_page_size / 1024 / 1024 , 2) size_in_mb
+FROM mysql.innodb_index_stats
+WHERE stat_name = 'size' AND index_name != 'PRIMARY' AND database_name = 'tpch'
+ORDER BY size_in_mb DESC;
+
+-- GET TOTAL INDEX AND DATA SIZE OF EACH TABLE
+SELECT table_name,
+round( data_length / ( 1024 *1024 ) , 2 ) AS 'data_length_mb',
+round( index_length / ( 1024 *1024 ) , 2 ) AS 'index_length_mb',
+round( round( data_length + index_length ) / ( 1024 *1024 ) , 2 ) AS 'total_size_mb'
+FROM information_schema.tables
+WHERE table_schema ='tpch'
+ORDER BY data_length DESC;
+
+-- ALL DATA IN INFORMATION SCHEMA
+SELECT *
+FROM information_schema.tables
+WHERE table_schema ='tpch'
+ORDER BY data_length desc;
+
+-- ALL DATA IN INDEX STATS
+SELECT *
+FROM mysql.innodb_index_stats
+WHERE database_name = 'tpch';
+
+-- ALL DATA IN TABLE STATS
+SELECT *
+FROM mysql.innodb_table_stats
+WHERE database_name = 'tpch';

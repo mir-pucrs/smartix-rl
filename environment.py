@@ -56,7 +56,10 @@ class Environment:
         else:
             print("State-reward not in dictionary")
             # self.rewards[state] = randint(2500, 2525)
-            self.rewards[state] = self.benchmark.run()
+            # self.rewards[state] = self.benchmark.run()
+            cost_sum = sum(self.db.get_queries_cost())
+            print("Cost_sum ===", cost_sum)
+            self.rewards[state] = 1/cost_sum
             self.rewards_archive[repr(state)] = self.rewards[state]
 
         # Save reward to list for plotting
