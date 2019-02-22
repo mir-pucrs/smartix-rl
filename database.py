@@ -185,25 +185,54 @@ class Database:
         print('Analyzed tables')
 
 
-    def get_queries_cost(self):
+    def get_state_info(self):
+        # Analyze tables
         self.analyze_tables()
+
+        # Establish new connection
         self.conn = pyodbc.connect(self.connection_string)
         self.cur = self.conn.cursor()
-        costs = list()
+
+        # Get queries EXPLAIN
+        queries_cost = list()
+        queries_explain = list()
         for query in self.queries:
+            # Execute EXPLAIN command for query
             self.cur.execute("EXPLAIN FORMAT=JSON %s" % query)
+
+            # Parse result
             result = self.cur.fetchall()
             result = str(result[0])
             result = result[2:-4]
             result = result.replace("\\n", "")
             result = result.replace("\\", "")
-            res_json = json.loads(result)
-            costs.append(float(res_json['query_block']['cost_info']['query_cost']))
+            query_explain = json.loads(result)
+
+            # Append results
+            queries_explain.append(query_explain)
+            queries_cost.append(float(query_explain['query_block']['cost_info']['query_cost']))
+        
+        # Get indexes size
+        # query_sizes = "SELECT table_name, round( data_length / ( 1024 *1024 ) , 2 ) AS 'data_length_mb', round( index_length / ( 1024 *1024 ) , 2 ) AS 'index_length_mb', round( round( data_length + index_length ) / ( 1024 *1024 ) , 2 ) AS 'total_size_mb' FROM information_schema.tables WHERE table_schema ='tpch' ORDER BY data_length DESC;"
+        query_sizes = "SELECT * FROM information_schema.tables WHERE table_schema = 'tpch' ORDER BY data_length desc;"
+        self.cur.execute(query_sizes)
+        result = self.cur.fetchall()
+        table_sizes = dict()
+        for row in result:
+            if row.TABLE_NAME in self.tables.keys():
+                table_sizes[row.TABLE_NAME] = dict()
+                table_sizes[row.TABLE_NAME]['table_rows'] = row.TABLE_ROWS
+                table_sizes[row.TABLE_NAME]['avg_row_length'] = row.AVG_ROW_LENGTH
+                table_sizes[row.TABLE_NAME]['data_length'] = row.DATA_LENGTH
+                table_sizes[row.TABLE_NAME]['index_length'] = row.INDEX_LENGTH
+                table_sizes[row.TABLE_NAME]['data_free'] = row.DATA_FREE
+
+        # Close connection
         self.conn.commit()
         self.cur.close()
         self.conn.close()
 
-        return costs
+        return queries_cost, queries_explain, table_sizes
 
 
 
@@ -214,6 +243,7 @@ if __name__ == "__main__":
         print("YEAHH!")
 
     start = time.time()
+    db.get_state_info()
     end = time.time()
     print("Elapsed time:", end - start)
 

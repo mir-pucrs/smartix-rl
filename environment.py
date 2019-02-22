@@ -27,6 +27,8 @@ class Environment:
         self.rewards_archive = dict()
         self.visited_states = list()
 
+        self.states_info = dict()
+
 
     def step(self, action):
         action.execute()
@@ -50,17 +52,28 @@ class Environment:
 
 
     def get_reward(self, state):
+        # Get state info
+        queries_cost, queries_explain, table_sizes = self.db.get_state_info()
+        self.states_info[repr(state)] = dict()
+        self.states_info[repr(state)]['queries_explain'] = queries_explain
+        self.states_info[repr(state)]['table_sizes'] = table_sizes
+
+        # Calculate reward (using benchmark)
         if repr(state) in self.rewards_archive.keys():
             print("State-reward in dictionary!")
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
             print("State-reward not in dictionary")
-            # self.rewards[state] = randint(2500, 2525)
-            # self.rewards[state] = self.benchmark.run()
-            cost_sum = sum(self.db.get_queries_cost())
-            print("Cost_sum ===", cost_sum)
-            self.rewards[state] = 1/cost_sum
-            self.rewards_archive[repr(state)] = self.rewards[state]
+            self.rewards[state] = randint(2500, 2525)
+            self.rewards[state] = self.benchmark.run()
+
+        # Calculate reward (using DBMS cost model)
+        # cost_sum = sum(queries_cost)
+        # print("!!! Cost_sum ===", cost_sum)
+        # self.rewards[state] = 10000000000/cost_sum
+
+        # Save reward to archive
+        self.rewards_archive[repr(state)] = self.rewards[state]
 
         # Save reward to list for plotting
         self.rewards_list.append(self.rewards[state])
@@ -102,6 +115,10 @@ class Environment:
     def dump_rewards_archive(self):
         with open('data/rewards_archive.json', 'w+') as outfile:
             json.dump(self.rewards_archive, outfile)
+    
+    def dump_states_info(self):
+        with open('data/state_info.json', 'w+') as outfile:
+            json.dump(self.states_info, outfile)
 
     def dump_rewards_history(self, rewards):
         with open('data/rewards_history_plot.dat', 'w+') as outfile:
@@ -111,6 +128,9 @@ class Environment:
     def post_episode(self, episode, episode_reward, episode_duration, episode_mse):
         # Dump rewards archive
         self.dump_rewards_archive()
+
+        # Dump states info
+        self.dump_states_info()
 
         # Dump computed state-rewards up to now
         self.dump_rewards_history(self.rewards_list)
