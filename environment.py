@@ -53,10 +53,10 @@ class Environment:
 
     def get_reward(self, state):
         # Get state info
-        queries_cost, queries_explain, table_sizes = self.db.get_state_info()
-        self.states_info[repr(state)] = dict()
-        self.states_info[repr(state)]['queries_explain'] = queries_explain
-        self.states_info[repr(state)]['table_sizes'] = table_sizes
+        # queries_cost, queries_explain, table_sizes = self.db.get_state_info()
+        # self.states_info[repr(state)] = dict()
+        # self.states_info[repr(state)]['queries_explain'] = queries_explain
+        # self.states_info[repr(state)]['table_sizes'] = table_sizes
 
         # Calculate reward (using benchmark)
         if repr(state) in self.rewards_archive.keys():
