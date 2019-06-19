@@ -52,25 +52,13 @@ class Environment:
 
 
     def get_reward(self, state):
-        # Get state info
-        # queries_cost, queries_explain, table_sizes = self.db.get_state_info()
-        # self.states_info[repr(state)] = dict()
-        # self.states_info[repr(state)]['queries_explain'] = queries_explain
-        # self.states_info[repr(state)]['table_sizes'] = table_sizes
-
         # Calculate reward (using benchmark)
         if repr(state) in self.rewards_archive.keys():
-            print("State-reward in dictionary!")
+            # print("State-reward in dictionary!")
             self.rewards[state] = self.rewards_archive[repr(state)]
         else:
-            print("State-reward not in dictionary")
-            self.rewards[state] = randint(2500, 2525)
+            # print("State-reward not in dictionary")
             self.rewards[state] = self.benchmark.run()
-
-        # Calculate reward (using DBMS cost model)
-        # cost_sum = sum(queries_cost)
-        # print("!!! Cost_sum ===", cost_sum)
-        # self.rewards[state] = 10000000000/cost_sum
 
         # Save reward to archive
         self.rewards_archive[repr(state)] = self.rewards[state]

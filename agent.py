@@ -170,7 +170,7 @@ class Agent:
         self.env = env
         self.state = self.env.reset()
 
-        # Initialize features' weights vector
+        # Initialize features weight vector
         self.weights_initialization(self.state)
 
         pprint.pprint(self.action_weights)

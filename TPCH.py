@@ -19,12 +19,8 @@ class TPCH:
 
 
     '''
-        Global configuration
+        Database connection and refresh files
     '''
-    # SERVER
-    # DB_CONFIG = {'user': 'dbuser', 'password': 'dbuser', 'host': '127.0.0.1', 'database': 'tpch'}
-    # REFRESH_FILES_PATH = '/home/sap-server/smartix/tpch-tools/dbgen/%d' % SCALE_FACTOR
-    # LOCAL
     DB_CONFIG = {'user': 'root', 'password': 'root', 'host': '127.0.0.1', 'database': 'tpch'}
     REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-tools/dbgen/%d' % SCALE_FACTOR
 
@@ -281,7 +277,6 @@ class TPCH:
         # results.append(power)
         # results.append(throughput)
         # results.append(qphh)
-
         # return results
 
         return qphh
