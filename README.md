@@ -231,11 +231,11 @@ $ sudo myodbc-installer -a -d -n "MySQL ODBC 8.0" -t "Driver=/usr/local/lib/libm
 
 VI. **Training SmartIX**
 
-26. Download SmartIX source code (**Put link to the repository after it is forked!!!**).
+26. Download SmartIX source code (or clone the repository).
 
-27. Configure the database connection string in the database.py class init method by putting your user, password, and database name to the connection string variable.
+27. Configure the database connection string in the database.py class init method: put your user, password, and database name to the connection string variable.
 
-28. The same has to be done in the TPCH.py class by putting your database connection info to the DB_CONFIG constant, as well as setting the REFRESH_FILES_PATH constant to the path you generated the refresh files back in Step 13.
+28. The same has to be done in the TPCH.py class: put your database connection info to the DB_CONFIG constant, as well as setting the REFRESH_FILES_PATH constant to the path you generated the refresh files back in Step 13.
 
 29. Then you can finally start training the agent by running:
 

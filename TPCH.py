@@ -21,8 +21,8 @@ class TPCH:
     '''
         Database connection and refresh files
     '''
-    DB_CONFIG = {'user': 'root', 'password': 'root', 'host': '127.0.0.1', 'database': 'tpch'}
-    REFRESH_FILES_PATH = '/home/gabriel/sap/tpch-tools/dbgen/%d' % SCALE_FACTOR
+    DB_CONFIG = {'user': 'dbuser', 'password': 'dbpass', 'host': '127.0.0.1', 'database': 'tpch'}
+    REFRESH_FILES_PATH = '~/path/to/dbgen/%d' % SCALE_FACTOR
 
 
     '''
