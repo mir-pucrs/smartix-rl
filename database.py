@@ -1,27 +1,39 @@
 import pyodbc
-import json
 import pprint
-import time
 
 pyodbc.pooling = False
 
 class Database:
 
     # Only primary and foreign keys
+    # tables = {
+    #     'customer': ['c_custkey', 'c_nationkey'],
+    #     'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
+    #     'nation': ['n_nationkey', 'n_regionkey'],
+    #     'orders': ['o_orderkey', 'o_custkey'],
+    #     'part': ['p_partkey'],
+    #     'partsupp': ['ps_partkey', 'ps_suppkey'],
+    #     'region': ['r_regionkey'],
+    #     'supplier': ['s_suppkey', 's_nationkey']
+    # }
+
+    # Only columns used in queries
     tables = {
-        'customer': ['c_custkey', 'c_nationkey'],
-        'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
-        'nation': ['n_nationkey', 'n_regionkey'],
-        'orders': ['o_orderkey', 'o_custkey'],
-        'part': ['p_partkey'],
-        'partsupp': ['ps_partkey', 'ps_suppkey'],
-        'region': ['r_regionkey'],
-        'supplier': ['s_suppkey', 's_nationkey']
+        'customer': ['c_custkey', 'c_nationkey', 'c_name', 'c_address', 'c_comment'],
+        'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey', 'l_extendedprice', 'l_linestatus', 'l_tax', 'l_linenumber', 'l_comment'],
+        'nation': ['n_nationkey', 'n_regionkey', 'n_comment'],
+        'orders': ['o_orderkey', 'o_custkey', 'o_orderpriority', 'o_shippriority', 'o_clerk', 'o_totalprice'],
+        'part': ['p_partkey', 'p_mfgr', 'p_retailprice', 'p_comment'],
+        'partsupp': ['ps_partkey', 'ps_suppkey', 'ps_comment'],
+        'region': ['r_regionkey', 'r_comment'],
+        'supplier': ['s_suppkey', 's_nationkey', 's_name', 's_address', 's_phone', 's_acctbal']
     }
-    
+
     def __init__(self):
-        # Database connection
-        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=dbuser;PWD=dbpass'
+        # SERVER
+        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=dbuser;PWD=dbuser'
+        # LOCAL
+        # self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=root;PWD=root'
 
 
     """
@@ -71,7 +83,6 @@ class Database:
         self.conn.close()
         return table_columns
 
-
     def get_table_indexed_columns(self, table):
         self.conn = pyodbc.connect(self.connection_string)
         self.cur = self.conn.cursor()
@@ -85,7 +96,6 @@ class Database:
         self.conn.close()
         return table_indexes
 
-
     def get_indexes_map(self):
         indexes_map = dict()
         for table in self.tables.keys():
@@ -98,7 +108,7 @@ class Database:
                     if column == index:
                         indexes_map[table][column] = 1
 
-        return indexes_map 
+        return indexes_map
 
     
     """
@@ -125,14 +135,22 @@ class Database:
         self.conn.close()
         
         return True
-    
 
-    def analyze_tables(self):
-        self.conn = pyodbc.connect(self.connection_string)
-        self.cur = self.conn.cursor()
-        for table in self.tables.keys():
-            self.cur.execute('ANALYZE TABLE %s;' % table)
-        self.conn.commit()
-        self.cur.close()
-        self.conn.close()
-        print('Analyzed tables')
+
+if __name__ == "__main__":
+    db = Database()
+
+    # db.create_index('c_phone', 'customer')
+    # db.create_index('l_commitdate', 'lineitem')
+    # db.create_index('n_name', 'nation')
+    # db.create_index('o_clerk', 'orders')
+    # db.create_index('p_brand', 'part')
+    # db.create_index('s_phone', 'supplier')
+    # db.create_index('ps_availqty', 'partsupp')
+
+    if (db.reset_indexes()):
+        print("YEAHH!")
+
+    indexes_map = db.get_indexes_map()
+
+    pprint.pprint(indexes_map)
