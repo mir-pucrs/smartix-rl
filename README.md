@@ -1,5 +1,7 @@
 # SmartIX
 
+[![DOI](https://zenodo.org/badge/144184391.svg)](https://zenodo.org/badge/latestdoi/144184391)
+
 **How to set up TPC-H Benchmark and train SmartIX**
 
 I. **Requirements**
