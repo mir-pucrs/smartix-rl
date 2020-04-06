@@ -7,33 +7,30 @@ class Database:
 
     # Only primary and foreign keys
     # tables = {
-    #     'customer': ['c_custkey', 'c_nationkey'],
-    #     'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
-    #     'nation': ['n_nationkey', 'n_regionkey'],
-    #     'orders': ['o_orderkey', 'o_custkey'],
-    #     'part': ['p_partkey'],
-    #     'partsupp': ['ps_partkey', 'ps_suppkey'],
-    #     'region': ['r_regionkey'],
-    #     'supplier': ['s_suppkey', 's_nationkey']
+    #     'CUSTOMER': ['c_custkey', 'c_nationkey'],
+    #     'LINEITEM': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
+    #     'NATION': ['n_nationkey', 'n_regionkey'],
+    #     'ORDERS': ['o_orderkey', 'o_custkey'],
+    #     'PART': ['p_partkey'],
+    #     'PARTSUPP': ['ps_partkey', 'ps_suppkey'],
+    #     'REGION': ['r_regionkey'],
+    #     'SUPPLIER': ['s_suppkey', 's_nationkey']
     # }
 
     # Only columns used in queries
     tables = {
-        'customer': ['c_custkey', 'c_nationkey', 'c_name', 'c_address', 'c_comment'],
-        'lineitem': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey', 'l_extendedprice', 'l_linestatus', 'l_tax', 'l_linenumber', 'l_comment'],
-        'nation': ['n_nationkey', 'n_regionkey', 'n_comment'],
-        'orders': ['o_orderkey', 'o_custkey', 'o_orderpriority', 'o_shippriority', 'o_clerk', 'o_totalprice'],
-        'part': ['p_partkey', 'p_mfgr', 'p_retailprice', 'p_comment'],
-        'partsupp': ['ps_partkey', 'ps_suppkey', 'ps_comment'],
-        'region': ['r_regionkey', 'r_comment'],
-        'supplier': ['s_suppkey', 's_nationkey', 's_name', 's_address', 's_phone', 's_acctbal']
+        'CUSTOMER': ['c_custkey', 'c_nationkey', 'c_name', 'c_address', 'c_comment'],
+        'LINEITEM': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey', 'l_extendedprice', 'l_linestatus', 'l_tax', 'l_linenumber', 'l_comment'],
+        'NATION': ['n_nationkey', 'n_regionkey', 'n_comment'],
+        'ORDERS': ['o_orderkey', 'o_custkey', 'o_orderpriority', 'o_shippriority', 'o_clerk', 'o_totalprice'],
+        'PART': ['p_partkey', 'p_mfgr', 'p_retailprice', 'p_comment'],
+        'PARTSUPP': ['ps_partkey', 'ps_suppkey', 'ps_comment'],
+        'REGION': ['r_regionkey', 'r_comment'],
+        'SUPPLIER': ['s_suppkey', 's_nationkey', 's_name', 's_address', 's_phone', 's_acctbal']
     }
 
     def __init__(self):
-        # SERVER
-        # self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=dbuser;PWD=dbuser'
-        # LOCAL
-        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=root;PWD=root'
+        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=smartix;PWD=smartix'
 
 
     """
@@ -140,13 +137,7 @@ class Database:
 if __name__ == "__main__":
     db = Database()
 
-    # db.create_index('c_phone', 'customer')
-    # db.create_index('l_commitdate', 'lineitem')
-    # db.create_index('n_name', 'nation')
-    # db.create_index('o_clerk', 'orders')
-    # db.create_index('p_brand', 'part')
-    # db.create_index('s_phone', 'supplier')
-    # db.create_index('ps_availqty', 'partsupp')
+    db.create_index('c_phone', 'CUSTOMER')
 
     if (db.reset_indexes()):
         print("YEAHH!")
