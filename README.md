@@ -5,12 +5,9 @@
 **How to set up TPC-H Benchmark and train SmartIX**
 
 I. **Requirements**
-*   Ubuntu Linux updated (`$ sudo apt-get update`)
-*   GCC (`$ sudo apt-get install gcc`)
-*   make (`$ sudo apt-get install make`)
 *   MySQL version 14.14 (see Section II)
 *   TPC-H version: 2.18.0 (see Section III)
-*   Python 3.6  (see Section V)
+*   Python 3.6 (see Section V)
 
 II. **Installing MySQL**
 
@@ -42,10 +39,10 @@ Press **Ctrl+C** to exit MySQL status.
 
 ```
 $ sudo mysql -u root -p
-mysql> CREATE USER 'dbuser'@'localhost' IDENTIFIED BY 'dbuser';
-mysql> GRANT ALL PRIVILEGES ON *.* TO 'dbuser'@'localhost' WITH GRANT OPTION;
-mysql> CREATE USER 'dbuser'@'%' IDENTIFIED BY 'dbuser';
-mysql> GRANT ALL PRIVILEGES ON *.* TO 'dbuser'@'%' WITH GRANT OPTION;
+mysql> CREATE USER 'smartix'@'localhost' IDENTIFIED BY 'smartix';
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'smartix'@'localhost' WITH GRANT OPTION;
+mysql> CREATE USER 'smartix'@'%' IDENTIFIED BY 'smartix';
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'smartix'@'%' WITH GRANT OPTION;
 mysql> FLUSH PRIVILEGES;
 mysql> EXIT;
 ```
@@ -53,7 +50,7 @@ mysql> EXIT;
 2. Create the database:
 
 ```
-$ mysql -u dbuser -p
+$ mysql -u smartix -p
 mysql> CREATE DATABASE tpch;
 mysql> EXIT;
 ```
@@ -100,12 +97,18 @@ $ ./dbgen -s 1
 10. Create the tables using the file `dss.ddl`:
 
 ```
-$ mysql -u dbuser -pdbuser tpch < dss.ddl
+$ mysql -u smartix -psmartix tpch < dss.ddl
 ```
 
-11. Log in on MySQL, and import the data to the database (pay attention to replace _~/path/ _for the actual path where the folder is):
+11. Log in on MySQL with --local-infile variable enabled and select the TPCH database. Then, import the data to the database (pay attention to replace _~/path/ _for the actual path where the folder is):
 
 ```
+mysql --local-infile=1 -u smartix -psmartix
+```
+
+```
+USE tpch;
+SET GLOBAL local_infile=1;
 load data local infile '~/path/dbgen/region.tbl' into table REGION fields terminated by '|' lines terminated by '\n';
 load data local infile '~/path/dbgen/nation.tbl' into table NATION fields terminated by '|' lines terminated by '\n';
 load data local infile '~/path/dbgen/customer.tbl' into table CUSTOMER fields terminated by '|' lines terminated by '\n';
@@ -202,47 +205,24 @@ mysql> exit;
 ```
 
 V. **Configuring the Python Environment**
-*   Python 3.6 (`$ sudo apt-get install python3.6`)
-*   pip (`$ sudo apt-get install python3-pip`)
 *   unixodbc (`$ sudo apt-get install unixodbc-dev`)
-*   pyodbc (`$ pip3 install --user pyodbc`)
-*   mysql-connector-python (`$ pip3 install mysql-connector-python`)
+*   pyodbc (`$ pip3 install pyodbc`)
+*   mysql-connector (`$ pip3 install mysql-connector mysql-connector-python`)
 
-21. Register the driver at MySQL (based on [MySQL Documentation](https://dev.mysql.com/doc/connector-odbc/en/connector-odbc-installation-binary-unix-tarball.html)).
-
-22. Download MySQL connector from [this link](https://drive.google.com/drive/folders/16CEvXOK0bW3ecsC5tVY1R33uYYymDm1D?usp=sharing).
-
-23. Go to the folder you downloaded and copy as follows:
-
-```
-$ sudo cp bin/* /usr/local/bin
-$ sudo cp lib/* /usr/local/lib
-```
-
-24. Register the UNICODE driver:
-
-```
-$ sudo myodbc-installer -a -d -n "MySQL ODBC 8.0 Driver" -t "Driver=/usr/local/lib/libmyodbc8w.so"
-```
-
-25. Register ANSI driver: 
-
-```
-$ sudo myodbc-installer -a -d -n "MySQL ODBC 8.0" -t "Driver=/usr/local/lib/libmyodbc8a.so"
-```
+21. Download the MySQL Connector ODBC from [this link](https://dev.mysql.com/downloads/connector/odbc/).
 
 VI. **Training SmartIX**
 
-26. Download SmartIX source code (or clone the repository).
+22. Download SmartIX source code (or clone the repository).
 
-27. Configure the database connection string in the database.py class init method: put your user, password, and database name to the connection string variable.
+23. Configure the database connection string in the database.py class init method: put your user, password, and database name to the connection string variable.
 
-28. The same has to be done in the TPCH.py class: put your database connection info to the DB_CONFIG constant, as well as setting the REFRESH_FILES_PATH constant to the path you generated the refresh files back in Step 13.
+24. The same has to be done in the TPCH.py class: put your database connection info to the DB_CONFIG constant, as well as setting the REFRESH_FILES_PATH constant to the path you generated the refresh files back in Step 13.
 
-29. Then you can finally start training the agent by running:
+25. Then you can finally start training the agent by running:
 
 ```
 $ python3 environment.py > training.log
 ```
 
-30. Finally, you can view training data in the `data` folder.
+36. Finally, you can view training data in the `data` folder.
