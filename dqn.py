@@ -8,17 +8,17 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-class ReplayBuffer():
-    def __init__(self, buffer_limit):
-        self.buffer = collections.deque(maxlen=buffer_limit)
+class ReplayMemory():
+    def __init__(self, memory_size):
+        self.memory = collections.deque(maxlen=memory_size)
 
 
     def put(self, transition):
-        self.buffer.append(transition)
+        self.memory.append(transition)
     
 
     def sample(self, n):
-        mini_batch = random.sample(self.buffer, n)
+        mini_batch = random.sample(self.memory, n)
         s_lst, a_lst, r_lst, s_prime_lst, done_mask_lst = [], [], [], [], []
         
         for transition in mini_batch:
@@ -35,7 +35,7 @@ class ReplayBuffer():
     
 
     def size(self):
-        return len(self.buffer)
+        return len(self.memory)
 
 
 class QNetwork(nn.Module):
@@ -52,7 +52,7 @@ class QNetwork(nn.Module):
 
 
 class DQNAgent():
-    def __init__(self, replay_memory=ReplayBuffer(50000), q=QNetwork(), q_target=QNetwork(), env=gym.make('CartPole-v1')):
+    def __init__(self, replay_memory=ReplayMemory(50000), q=QNetwork(), q_target=QNetwork(), env=gym.make('CartPole-v1')):
         self.replay_memory = replay_memory
         self.q = q
         self.q_target = q_target
@@ -60,8 +60,8 @@ class DQNAgent():
 
         # Hyperparameters
         self.learning_rate = 0.0005
-        self.gamma         = 0.9
-        self.batch_size    = 32
+        self.gamma  = 0.9
+        self.batch_size = 32
         self.epsilon = 0.08
 
         self.q_target.load_state_dict(q.state_dict())
@@ -73,18 +73,18 @@ class DQNAgent():
         # print("Out:", out)
         coin = random.random()
         if coin < self.epsilon:
+            # THE RANDOM SHOULD BE 0 or 1 cause there are only two actions
+            # print("Random action")
             return random.randint(0,1)
-            # actions = self.env.get_available_actions(state)
-            # return random.choice(actions)
         else: 
             # print("Out argmax:", out.argmax().item())
             return out.argmax().item()
 
 
     def optimize_model(self, q, q_target, memory, optimizer):
-        if self.replay_memory.size() > 400:
+        if self.replay_memory.size() > self.batch_size:
             for _ in range(10):
-                s,a,r,s_prime,done_mask = memory.sample(self.batch_size)
+                s, a, r, s_prime, done_mask = memory.sample(self.batch_size)
 
                 # print("s", s)
                 # print("a", a)
@@ -114,11 +114,12 @@ class DQNAgent():
         score = 0.0  
         optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
 
-        for episode in range(1):
+        for episode in range(500):
             self.epsilon = max(0.01, 0.08 - 0.01*(episode/200)) #Linear annealing from 8% to 1%
             s = self.env.reset()
 
-            for step in range(5):
+            # for step in range(50):
+            while (True):
                 
                 # Action: int
                 # State: numpy array
@@ -144,6 +145,8 @@ class DQNAgent():
             
                 # Perform one step of the optimization (on the target network)
                 self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
+
+                self.env.render()
 
             if episode%print_interval==0 and episode!=0:
                 self.q_target.load_state_dict(self.q.state_dict())
