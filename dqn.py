@@ -114,12 +114,14 @@ class DQNAgent():
         score = 0.0  
         optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
 
+        print(self.env)
+
         for episode in range(500):
             self.epsilon = max(0.01, 0.08 - 0.01*(episode/200)) #Linear annealing from 8% to 1%
             s = self.env.reset()
 
             # for step in range(50):
-            while (True):
+            for step in range(10):
                 
                 # Action: int
                 # State: numpy array
@@ -127,11 +129,15 @@ class DQNAgent():
                 # Info: empty dict
 
                 a = self.sample_action(torch.from_numpy(s).float())
-                # print(step, "Action", a, type(a))
+                
                 s_prime, r, done, info = self.env.step(a)
-                # print(step, "S_prime", s, type(s))
-                # print(step, "Reward", r, type(r))
-                # print(step, "Info", info, type(info))
+
+                print(step, "\tAction\t",   type(a),    "\t\t\t",   a)
+                print(step, "\tS_prime\t",  type(s),    "\t",       s, s.shape)
+                print(step, "\tReward\t",   type(r),    "\t\t",     r)
+                print(step, "\tInfo\t",     type(info), "\t\t",     info)
+
+                break
 
                 done_mask = 0.0 if done else 1.0
                 self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
@@ -147,6 +153,8 @@ class DQNAgent():
                 self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
 
                 self.env.render()
+
+            break
 
             if episode%print_interval==0 and episode!=0:
                 self.q_target.load_state_dict(self.q.state_dict())
