@@ -1,37 +1,18 @@
 import pyodbc
-import pprint
+import json
 
-pyodbc.pooling = False
 
-class Database:
-
-    # Only primary and foreign keys
-    # tables = {
-    #     'CUSTOMER': ['c_custkey', 'c_nationkey'],
-    #     'LINEITEM': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey'],
-    #     'NATION': ['n_nationkey', 'n_regionkey'],
-    #     'ORDERS': ['o_orderkey', 'o_custkey'],
-    #     'PART': ['p_partkey'],
-    #     'PARTSUPP': ['ps_partkey', 'ps_suppkey'],
-    #     'REGION': ['r_regionkey'],
-    #     'SUPPLIER': ['s_suppkey', 's_nationkey']
-    # }
-
-    # Only columns used in queries
-    tables = {
-        'CUSTOMER': ['c_custkey', 'c_nationkey', 'c_name', 'c_address', 'c_comment'],
-        'LINEITEM': ['l_orderkey', 'l_linenumber', 'l_partkey', 'l_suppkey', 'l_extendedprice', 'l_linestatus', 'l_tax', 'l_linenumber', 'l_comment'],
-        'NATION': ['n_nationkey', 'n_regionkey', 'n_comment'],
-        'ORDERS': ['o_orderkey', 'o_custkey', 'o_orderpriority', 'o_shippriority', 'o_clerk', 'o_totalprice'],
-        'PART': ['p_partkey', 'p_mfgr', 'p_retailprice', 'p_comment'],
-        'PARTSUPP': ['ps_partkey', 'ps_suppkey', 'ps_comment'],
-        'REGION': ['r_regionkey', 'r_comment'],
-        'SUPPLIER': ['s_suppkey', 's_nationkey', 's_name', 's_address', 's_phone', 's_acctbal']
-    }
+class Database():
 
     def __init__(self):
-        self.connection_string = 'DRIVER={MySQL ODBC 8.0};SERVER=127.0.0.1;DATABASE=tpch;UID=smartix;PWD=smartix'
+        # Get database credentials
+        with open('db_credentials.json', 'r') as f:
+            credentials = f.read() 
+        self.credentials = json.loads(credentials)
 
+        # Database connection string
+        self.connection_string = ("DRIVER={MySQL ODBC 8.0 Unicode Driver};SERVER=127.0.0.1;DATABASE=%s;UID=%s;PWD=%s" % (self.credentials['DATABASE'], self.credentials['UID'], self.credentials['PWD']))
+        print(self.connection_string)
 
     """
         Action-related methods
@@ -144,4 +125,5 @@ if __name__ == "__main__":
 
     indexes_map = db.get_indexes_map()
 
-    pprint.pprint(indexes_map)
+    from pprint import pprint
+    pprint(indexes_map)
