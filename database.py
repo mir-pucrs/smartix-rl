@@ -65,16 +65,16 @@ class Database():
         return tables
 
     def get_indexes(self):
-        indexes = list()
+        indexes = dict()
         for table in self.tables.keys():
             command = 'SHOW INDEX FROM {}'.format(table)
             output = self.execute_fetchall(command, verbose=False)
             table_indexes = list(set([row[4] for row in output]))
             for column in self.tables[table]:
                 if column in table_indexes:
-                    indexes.append(1)
+                    indexes[column] = 1
                 else:
-                    indexes.append(0)
+                    indexes[column] = 0
         return indexes
 
     def drop_index(self, table, column):
@@ -136,7 +136,6 @@ class Database():
             return output
         except pyodbc.Error as ex:
             print('ERROR: {}'.format(ex))
-    
 
 
 if __name__ == "__main__":
