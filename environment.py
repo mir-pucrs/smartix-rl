@@ -1,7 +1,7 @@
 from database import Database
 import numpy as np
 
-class Environment:
+class Environment():
 
     """
     step()
@@ -40,13 +40,14 @@ class Environment:
         return s_prime, reward, False, dict()
 
     def apply_action(self, action):
+        # APPLY NEW QUERY TRANSITION TO NEXT STATE
         return np.array([0])
 
     def compute_reward(self):
         return 0.0
 
     def reset(self):
-        pass
+        return self.db.reset_indexes()
     
     def close(self):
-        pass
+        return self.db.close_connection()
