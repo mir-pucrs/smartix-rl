@@ -12,11 +12,9 @@ class ReplayMemory():
     def __init__(self, memory_size):
         self.memory = collections.deque(maxlen=memory_size)
 
-
     def put(self, transition):
         self.memory.append(transition)
     
-
     def sample(self, n):
         mini_batch = random.sample(self.memory, n)
         s_lst, a_lst, r_lst, s_prime_lst, done_mask_lst = [], [], [], [], []
@@ -29,21 +27,24 @@ class ReplayMemory():
             s_prime_lst.append(s_prime)
             done_mask_lst.append([done_mask])
 
-        return torch.tensor(s_lst, dtype=torch.float), torch.tensor(a_lst), \
-               torch.tensor(r_lst), torch.tensor(s_prime_lst, dtype=torch.float), \
-               torch.tensor(done_mask_lst)
-    
+        return torch.tensor(s_lst, dtype=torch.float), \
+            torch.tensor(a_lst), \
+            torch.tensor(r_lst), \
+            torch.tensor(s_prime_lst, dtype=torch.float), \
+            torch.tensor(done_mask_lst)
 
     def size(self):
         return len(self.memory)
 
 
 class QNetwork(nn.Module):
-    def __init__(self):
+    """
+        HAVE TO CHANGE in/out sizes
+    """
+    def __init__(self, input_size=4, output_size=2):
         super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(4, 256)
-        self.fc2 = nn.Linear(256, 2)
-
+        self.fc1 = nn.Linear(input_size, 256)
+        self.fc2 = nn.Linear(256, output_size)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -52,21 +53,22 @@ class QNetwork(nn.Module):
 
 
 class DQNAgent():
-    def __init__(self, replay_memory=ReplayMemory(50000), q=QNetwork(), q_target=QNetwork(), env=gym.make('CartPole-v1')):
-        self.replay_memory = replay_memory
-        self.q = q
-        self.q_target = q_target
+    """
+        HAVE TO CHANGE THE ENVIRONMENT!!!
+    """
+    def __init__(self, replay_memory=ReplayMemory(50000), qnet_input_size=4, qnet_output_size=2, env=gym.make('CartPole-v1')):
         self.env = env
+        self.replay_memory = replay_memory
+        self.q = QNetwork(qnet_input_size, qnet_output_size)
+        self.q_target = QNetwork(qnet_input_size, qnet_output_size)
+        self.q_target.load_state_dict(self.q.state_dict())
 
         # Hyperparameters
         self.learning_rate = 0.0005
         self.gamma  = 0.9
-        self.batch_size = 32
         self.epsilon = 0.08
-
-        self.q_target.load_state_dict(q.state_dict())
-    
-
+        self.batch_size = 16
+        
     def sample_action(self, state):
         # print("Sampling action...")
         out = self.q.forward(state)
@@ -75,7 +77,7 @@ class DQNAgent():
         if coin < self.epsilon:
             # THE RANDOM SHOULD BE 0 or 1 cause there are only two actions
             # print("Random action")
-            return random.randint(0,1)
+            return random.randint(0, 1)
         else: 
             # print("Out argmax:", out.argmax().item())
             return out.argmax().item()
@@ -83,84 +85,62 @@ class DQNAgent():
 
     def optimize_model(self, q, q_target, memory, optimizer):
         if self.replay_memory.size() > self.batch_size:
-            for _ in range(10):
+            for _ in range(self.batch_size):
                 s, a, r, s_prime, done_mask = memory.sample(self.batch_size)
-
-                # print("s", s)
-                # print("a", a)
-                # print("r", r)
-                # print("s'", s_prime)
-                # print("done_mask", done_mask)
-
-                # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-                # columns of actions taken. These are the actions which would've been taken
-                # for each batch state according to policy_net
-                # state_action_values = policy_net(state_batch).gather(1, action_batch)
+                
                 q_out = q(s)
-                # print("q_out", q_out)
                 q_a = q_out.gather(1,a)
-                # print("q_a", q_a)
                 max_q_prime = q_target(s_prime).max(1)[0].unsqueeze(1)
                 target = r + self.gamma * max_q_prime * done_mask
+
                 loss = F.smooth_l1_loss(q_a, target)
-                
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
     
 
     def train(self):
-        print_interval = 20
-        score = 0.0  
+        change_params_interval = 16
+        accum_reward = 0.0  
         optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
 
         print(self.env)
 
-        for episode in range(500):
+        for episode in range(50):
             self.epsilon = max(0.01, 0.08 - 0.01*(episode/200)) #Linear annealing from 8% to 1%
             s = self.env.reset()
 
-            # for step in range(50):
-            for step in range(10):
-                
-                # Action: int
-                # State: numpy array
-                # Reward: float
-                # Info: empty dict
+            for step in range(24):
 
                 a = self.sample_action(torch.from_numpy(s).float())
                 
                 s_prime, r, done, info = self.env.step(a)
 
-                print(step, "\tAction\t",   type(a),    "\t\t\t",   a)
-                print(step, "\tS_prime\t",  type(s),    "\t",       s, s.shape)
-                print(step, "\tReward\t",   type(r),    "\t\t",     r)
-                print(step, "\tInfo\t",     type(info), "\t\t",     info)
-
-                break
+                # print(step, "\tAction\t",   type(a),    "\t\t\t",   a)
+                # print(step, "\tS_prime\t",  type(s),    "\t",       s, s.shape)
+                # print(step, "\tReward\t",   type(r),    "\t\t",     r)
+                # print(step, "\tInfo\t",     type(info), "\t\t",     info)
 
                 done_mask = 0.0 if done else 1.0
                 self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
 
                 s = s_prime
 
-                score += r
+                accum_reward += r
 
                 if done:
                     break
-            
+                    
+                self.env.render()
+                
                 # Perform one step of the optimization (on the target network)
                 self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
 
-                self.env.render()
-
-            break
-
-            if episode%print_interval==0 and episode!=0:
+            if episode%change_params_interval == 0 and episode != 0:
                 self.q_target.load_state_dict(self.q.state_dict())
-                print("# of episode :{}, avg score : {:.1f}, buffer size : {}, epsilon : {:.1f}%".format(
-                                                                episode, score/print_interval, self.replay_memory.size(), self.epsilon*100))
-                score = 0.0
+                print("# of episode :{}, avg accum_reward : {:.1f}, buffer size : {}, epsilon : {:.1f}%".format(
+                                                                episode, accum_reward/change_params_interval, self.replay_memory.size(), self.epsilon*100))
+                accum_reward = 0.0
         
         self.env.close()
 
