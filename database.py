@@ -5,13 +5,19 @@ import json
 class Database():
 
     """
+    get_query_cost(query)
+
+    get_tables()
+
+    get_indexes()
+
     drop_index(table, column)
 
     create_index(table, column)
 
     reset_indexes() - reset indexes in the database
 
-    close() - close the database connection
+    close_connection() - close the database connection
     """
 
     def __init__(self):
@@ -25,6 +31,18 @@ class Database():
 
         # Get tables and indexes
         self.tables = self.get_tables()
+
+    def get_query_cost(self, query):
+        # Analyze tables
+        for table in self.tables.keys():
+            command = "ANALYZE TABLE {};".format(table)
+            self.execute(command, verbose=False)
+        # Get query cost
+        command = "EXPLAIN FORMAT=JSON {}".format(query)
+        output = self.execute_fetchall(command, verbose=False)
+        explain = json.loads(output[0][0])
+        cost = float(explain['query_block']['cost_info']['query_cost'])
+        return cost
 
     def get_tables(self):
         # Fetch constraints
@@ -86,6 +104,15 @@ class Database():
                     command = "DROP INDEX %s ON %s;" % (index, table)
         return True
 
+    def close_connection(self):
+        try:
+            self.cur.close()
+            self.conn.close()
+            return True
+        except pyodbc.Error as ex: 
+            print('ERROR: {}'.format(ex))
+            return False
+
     def execute(self, command, verbose=True):
         try:
             self.conn = pyodbc.connect(self.connection_string, autocommit=True)
@@ -109,14 +136,19 @@ class Database():
             return output
         except pyodbc.Error as ex:
             print('ERROR: {}'.format(ex))
+    
 
 
 if __name__ == "__main__":
     from pprint import pprint
     db = Database()
-    pprint(db.tables)
-    print(db.get_indexes(), len(db.get_indexes()))
-    db.create_index('SUPPLIER', 'S_COMMENT')
-    print(db.get_indexes())
     db.reset_indexes()
-    print(db.get_indexes())
+
+    # print(db.get_indexes())
+    # db.create_index('LINEITEM', 'L_SHIPDATE')
+    # db.create_index('ORDERS', 'O_ORDERDATE')
+    # print(db.get_indexes())
+
+    # query = "SELECT l_orderkey, sum(l_extendedprice * (1 - l_discount)) AS revenue, o_orderdate, o_shippriority FROM CUSTOMER, ORDERS, LINEITEM WHERE c_mktsegment = 'AUTOMOBILE' AND c_custkey = o_custkey AND l_orderkey = o_orderkey AND o_orderdate < date '1995-03-13' AND l_shipdate > date '1995-03-13' GROUP BY l_orderkey, o_orderdate, o_shippriority ORDER BY revenue DESC, o_orderdate LIMIT 10;"
+    # pprint(db.get_query_cost(query))
+    
