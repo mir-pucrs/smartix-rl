@@ -30,7 +30,7 @@ class Environment():
             action: int
 
             Returns:
-            s_prime: np.array shape (n_actions, )
+            s_prime: np.array shape (n_features, )
             reward: float
             done: boolean
             info: empty dict
@@ -92,9 +92,12 @@ class Environment():
 
     def reset(self):
         self.workload_iterator = 0
-        return self.db.reset_indexes()
+        self.db.reset_indexes()
+        return self.get_state()
     
     def close(self):
+        self.workload_iterator = 0
+        self.db.reset_indexes()
         return self.db.close_connection()
 
 
@@ -102,5 +105,5 @@ if __name__ == "__main__":
     from pprint import pprint
     env = Environment()
 
-    # pprint(state)
+    pprint((env.get_state().shape))
     # pprint(env.db.get_indexes())
