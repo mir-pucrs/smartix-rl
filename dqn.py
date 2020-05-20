@@ -7,6 +7,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+from pprint import pprint
+from environment import Environment
+
 
 class ReplayMemory():
     def __init__(self, memory_size):
@@ -41,7 +44,7 @@ class QNetwork(nn.Module):
     """
         HAVE TO CHANGE in/out sizes
     """
-    def __init__(self, input_size=4, output_size=2):
+    def __init__(self, input_size=45, output_size=25):
         super(QNetwork, self).__init__()
         self.fc1 = nn.Linear(input_size, 256)
         self.fc2 = nn.Linear(256, output_size)
@@ -56,7 +59,7 @@ class DQNAgent():
     """
         HAVE TO CHANGE THE ENVIRONMENT!!!
     """
-    def __init__(self, replay_memory=ReplayMemory(50000), qnet_input_size=4, qnet_output_size=2, env=gym.make('CartPole-v1')):
+    def __init__(self, replay_memory=ReplayMemory(50000), qnet_input_size=45, qnet_output_size=45, env=Environment()):
         self.env = env
         self.replay_memory = replay_memory
         self.q = QNetwork(qnet_input_size, qnet_output_size)
@@ -70,16 +73,11 @@ class DQNAgent():
         self.batch_size = 16
         
     def sample_action(self, state):
-        # print("Sampling action...")
-        out = self.q.forward(state)
-        # print("Out:", out)
+        out = self.q(state)
         coin = random.random()
         if coin < self.epsilon:
-            # THE RANDOM SHOULD BE 0 or 1 cause there are only two actions
-            # print("Random action")
             return random.randint(0, 1)
         else: 
-            # print("Out argmax:", out.argmax().item())
             return out.argmax().item()
 
 
@@ -110,16 +108,16 @@ class DQNAgent():
             self.epsilon = max(0.01, 0.08 - 0.01*(episode/200)) #Linear annealing from 8% to 1%
             s = self.env.reset()
 
-            for step in range(24):
+            for step in range(22):
 
                 a = self.sample_action(torch.from_numpy(s).float())
                 
                 s_prime, r, done, info = self.env.step(a)
 
-                # print(step, "\tAction\t",   type(a),    "\t\t\t",   a)
-                # print(step, "\tS_prime\t",  type(s),    "\t",       s, s.shape)
-                # print(step, "\tReward\t",   type(r),    "\t\t",     r)
-                # print(step, "\tInfo\t",     type(info), "\t\t",     info)
+                print(step, "\tState\t", s)
+                print(step, "\tAction\t", a)
+                print(step, "\tReward\t", r)
+                print(step, "\tS_prime\t", s_prime)
 
                 done_mask = 0.0 if done else 1.0
                 self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
@@ -130,11 +128,14 @@ class DQNAgent():
 
                 if done:
                     break
-                    
-                self.env.render()
+                
+                # break
+                # self.env.render()
                 
                 # Perform one step of the optimization (on the target network)
                 self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
+
+            # break
 
             if episode%change_params_interval == 0 and episode != 0:
                 self.q_target.load_state_dict(self.q.state_dict())
