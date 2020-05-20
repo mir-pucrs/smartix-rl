@@ -4,6 +4,16 @@ import json
 
 class Database():
 
+    """
+    drop_index(table, column)
+
+    create_index(table, column)
+
+    reset_indexes() - reset indexes in the database
+
+    close() - close the database connection
+    """
+
     def __init__(self):
         # Get database credentials
         with open('db_credentials.json', 'r') as f:
@@ -11,119 +21,102 @@ class Database():
         self.credentials = json.loads(credentials)
 
         # Database connection string
-        self.connection_string = ("DRIVER={MySQL ODBC 8.0 Unicode Driver};SERVER=127.0.0.1;DATABASE=%s;UID=%s;PWD=%s" % (self.credentials['DATABASE'], self.credentials['UID'], self.credentials['PWD']))
-        print(self.connection_string)
+        self.connection_string = ("DRIVER={%s};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s" % (self.credentials['DRIVER'], self.credentials['SERVER'], self.credentials['DATABASE'], self.credentials['UID'], self.credentials['PWD']))
 
-    """
-        Action-related methods
-    """
-    def drop_index(self, column, table):
-        command = ("DROP INDEX idx_%s ON %s;" % (column, table))
-        try:
-            self.conn = pyodbc.connect(self.connection_string)
-            self.cur = self.conn.cursor()
-            self.cur.execute(command)
-            self.conn.commit()
-            self.cur.close()
-            self.conn.close()
-            print('Dropped index on (%s) %s' % (table, column))
-        except pyodbc.Error as ex:
-            print("Didn't drop index on %s, error %s" % (column, ex))
+        # Get tables and indexes
+        self.tables = self.get_tables()
 
+    def get_tables(self):
+        # Fetch constraints
+        command = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.key_column_usage WHERE TABLE_SCHEMA='{}';".format(self.credentials['DATABASE'])
+        output = self.execute_fetchall(command, verbose=False)
+        constraints = [row[0] for row in output]
+        
+        # Fetch all tables and columns
+        command = "SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.columns WHERE TABLE_SCHEMA='{}' ORDER BY TABLE_NAME, ORDINAL_POSITION;".format(self.credentials['DATABASE'])
+        output = self.execute_fetchall(command, verbose=False)
+        tables = dict()
+        for row in output:
+            table, column = row
+            if column not in constraints:
+                if table not in tables.keys():
+                    tables[table] = list()
+                tables[table].append(column)
+        
+        # Return dict with valid columns for indexing
+        return tables
 
-    def create_index(self, column, table):
-        command = "CREATE INDEX idx_%s ON %s (%s);" % (column, table, column)
-        try:
-            self.conn = pyodbc.connect(self.connection_string)
-            self.cur = self.conn.cursor()
-            self.cur.execute(command)
-            self.conn.commit()
-            self.cur.close()
-            self.conn.close()
-            print('Created index on (%s) %s' % (table, column))
-        except pyodbc.Error as ex:
-            print("Didn't create index on %s, error %s" % (column, ex))
-
-
-    """
-        State-related methods
-    """
-    def get_table_columns(self, table):
-        self.conn = pyodbc.connect(self.connection_string)
-        self.cur = self.conn.cursor()
-        self.cur.execute('SHOW COLUMNS FROM %s;' % table)
-        table_columns = list()
-        for row in self.cur.fetchall():
-            if row[0] not in self.tables[table]:
-                table_columns.append(row[0])
-        self.conn.commit()
-        self.cur.close()
-        self.conn.close()
-        return table_columns
-
-    def get_table_indexed_columns(self, table):
-        self.conn = pyodbc.connect(self.connection_string)
-        self.cur = self.conn.cursor()
-        self.cur.execute('SHOW INDEXES FROM %s;' % table)
-        table_indexes = list()
-        for index in self.cur.fetchall():
-            if index[2] not in self.tables[table]:
-                table_indexes.append(index[4])
-        self.conn.commit()
-        self.cur.close()
-        self.conn.close()
-        return table_indexes
-
-    def get_indexes_map(self):
-        indexes_map = dict()
+    def get_indexes(self):
+        indexes = list()
         for table in self.tables.keys():
-            indexes_map[table] = dict()
-            indexed_columns = self.get_table_indexed_columns(table)
-            table_columns = self.get_table_columns(table)
-            for column in table_columns:
-                indexes_map[table][column] = 0
-                for index in indexed_columns:
-                    if column == index:
-                        indexes_map[table][column] = 1
+            command = 'SHOW INDEX FROM {}'.format(table)
+            output = self.execute_fetchall(command, verbose=False)
+            table_indexes = list(set([row[4] for row in output]))
+            for column in self.tables[table]:
+                if column in table_indexes:
+                    indexes.append(1)
+                else:
+                    indexes.append(0)
+        return indexes
 
-        return indexes_map
+    def drop_index(self, table, column):
+        if 'smartix_' in column:
+            command = ("DROP INDEX %s ON %s;" % (column, table))
+        else:
+            command = ("DROP INDEX smartix_%s ON %s;" % (column, table))
+        self.execute(command)
 
-    
-    """
-        Environment-related methods
-    """
+    def create_index(self, table, column):
+        command = "CREATE INDEX smartix_%s ON %s (%s);" % (column, table, column)
+        self.execute(command)
+
     def reset_indexes(self):
-        # FETCH INDEX NAMES
-        self.conn = pyodbc.connect(self.connection_string)
-        self.cur = self.conn.cursor()
-
         for table in self.tables.keys():
-            self.cur.execute('SHOW INDEXES FROM %s;' % table)
-            index_names = list()
+            # Get indexes for table
+            command = "SHOW INDEXES FROM {};".format(table)
+            output = self.execute_fetchall(command, verbose=False)
 
-            for index in self.cur.fetchall():
+            index_names = list()
+            for index in output:
                 index_names.append(index[2])
 
             for index in index_names:
-                if "idx_" in index:
-                    self.cur.execute("DROP INDEX %s ON %s;" % (index, table))
-        
-        self.conn.commit()
-        self.cur.close()
-        self.conn.close()
-        
+                if "smartix_" in index:
+                    self.drop_index(table, index)
+                    command = "DROP INDEX %s ON %s;" % (index, table)
         return True
+
+    def execute(self, command, verbose=True):
+        try:
+            self.conn = pyodbc.connect(self.connection_string, autocommit=True)
+            self.cur = self.conn.cursor()
+            self.cur.execute(command)
+            self.cur.close()
+            self.conn.close()
+            if verbose: print('OK: {}'.format(command))
+        except pyodbc.Error as ex:
+            print('ERROR: {}'.format(ex))
+    
+    def execute_fetchall(self, command, verbose=True):
+        try:
+            self.conn = pyodbc.connect(self.connection_string, autocommit=True)
+            self.cur = self.conn.cursor()
+            self.cur.execute(command)
+            output = self.cur.fetchall()
+            self.cur.close()
+            self.conn.close()
+            if verbose: print('OK: {}'.format(command))
+            return output
+        except pyodbc.Error as ex:
+            print('ERROR: {}'.format(ex))
 
 
 if __name__ == "__main__":
-    db = Database()
-
-    db.create_index('c_phone', 'CUSTOMER')
-
-    if (db.reset_indexes()):
-        print("YEAHH!")
-
-    indexes_map = db.get_indexes_map()
-
     from pprint import pprint
-    pprint(indexes_map)
+    db = Database()
+    pprint(db.tables)
+    print(db.get_indexes(), len(db.get_indexes()))
+    db.create_index('SUPPLIER', 'S_COMMENT')
+    print(db.get_indexes())
+    db.reset_indexes()
+    print(db.get_indexes())
