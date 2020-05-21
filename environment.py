@@ -1,21 +1,7 @@
 from database import Database
 import numpy as np
-import json
 
 class Environment():
-
-    """
-    step()
-
-    apply_action() - create/drop index and return new state
-
-    compute_reward() - fetch cost of executing last query?
-
-    reset() - reset indexes in the database
-
-    close() - close the database connection and reset indexes
-    """
-
     def __init__(self, workload_path='workload/tpch.sql'):
         # Database instance
         self.db = Database()
@@ -24,27 +10,26 @@ class Environment():
         self.workload = self.load_workload(workload_path)
         self.workload_iterator = 0
 
+        # Others
+        self.n_features = len(self.get_state())
+        self.n_actions = self.n_features * 2
+
     def step(self, action):
         """
-            Parameters:
-            action: int
-
-            Returns:
-            s_prime: np.array shape (n_features, )
-            reward: float
-            done: boolean
-            info: empty dict
+        fazer recompensa como running mean das ultimas 10 queries
+        fazer ultimas features do estado como sendo um contador das ultimas colunas q foram aparecendo
         """
         # Apply action
         s_prime, reward = self.apply_transition(action)
-
         return s_prime, reward, False, dict()
 
     def apply_transition(self, action):
         # Apply index change
+        print("Applying index...")
         self.apply_index_change(action)
 
         # Execute next_query
+        print("Executing query...")
         next_query = self.step_workload()
 
         # Compute reward
@@ -57,7 +42,7 @@ class Environment():
 
     def compute_reward(self, query):
         cost = self.db.get_query_cost(query)
-        reward = 1/cost
+        reward = (1/cost) * 1000000
         return reward
 
     def get_state(self):
@@ -67,21 +52,23 @@ class Environment():
 
     def apply_index_change(self, action):
         indexes = self.db.get_indexes()
+        if action < self.n_actions/2: create = True
         for idx, column in enumerate(indexes):
             if idx == action:
                 # Get the table
                 for table in self.db.tables.keys():
                     if column in self.db.tables[table]:
-                        if indexes[column] == 1:
-                            self.db.drop_index(table, column)
-                        else:
+                        if create:
                             self.db.create_index(table, column)
+                        else:
+                            self.db.drop_index(table, column)
                         break
                 break
 
     def step_workload(self):
         query = self.workload[self.workload_iterator]
         self.db.execute(query, verbose=False)
+        self.workload_iterator += 1
         return query
 
     def load_workload(self, path):
@@ -106,4 +93,3 @@ if __name__ == "__main__":
     env = Environment()
 
     pprint((env.get_state().shape))
-    # pprint(env.db.get_indexes())

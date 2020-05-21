@@ -3,23 +3,6 @@ import json
 
 
 class Database():
-
-    """
-    get_query_cost(query)
-
-    get_tables()
-
-    get_indexes()
-
-    drop_index(table, column)
-
-    create_index(table, column)
-
-    reset_indexes() - reset indexes in the database
-
-    close_connection() - close the database connection
-    """
-
     def __init__(self):
         # Get database credentials
         with open('db_credentials.json', 'r') as f:
@@ -143,11 +126,5 @@ if __name__ == "__main__":
     db = Database()
     db.reset_indexes()
 
-    # print(db.get_indexes())
-    # db.create_index('LINEITEM', 'L_SHIPDATE')
-    # db.create_index('ORDERS', 'O_ORDERDATE')
-    # print(db.get_indexes())
-
-    # query = "SELECT l_orderkey, sum(l_extendedprice * (1 - l_discount)) AS revenue, o_orderdate, o_shippriority FROM CUSTOMER, ORDERS, LINEITEM WHERE c_mktsegment = 'AUTOMOBILE' AND c_custkey = o_custkey AND l_orderkey = o_orderkey AND o_orderdate < date '1995-03-13' AND l_shipdate > date '1995-03-13' GROUP BY l_orderkey, o_orderdate, o_shippriority ORDER BY revenue DESC, o_orderdate LIMIT 10;"
-    # pprint(db.get_query_cost(query))
+    pprint(db.tables)
     

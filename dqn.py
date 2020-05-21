@@ -41,10 +41,7 @@ class ReplayMemory():
 
 
 class QNetwork(nn.Module):
-    """
-        HAVE TO CHANGE in/out sizes
-    """
-    def __init__(self, input_size=45, output_size=25):
+    def __init__(self, input_size, output_size):
         super(QNetwork, self).__init__()
         self.fc1 = nn.Linear(input_size, 256)
         self.fc2 = nn.Linear(256, output_size)
@@ -56,29 +53,30 @@ class QNetwork(nn.Module):
 
 
 class DQNAgent():
-    """
-        HAVE TO CHANGE THE ENVIRONMENT!!!
-    """
-    def __init__(self, replay_memory=ReplayMemory(50000), qnet_input_size=45, qnet_output_size=45, env=Environment()):
+    def __init__(self, replay_memory=ReplayMemory(50000), env=Environment()):
         self.env = env
         self.replay_memory = replay_memory
-        self.q = QNetwork(qnet_input_size, qnet_output_size)
-        self.q_target = QNetwork(qnet_input_size, qnet_output_size)
+        self.q = QNetwork(self.env.n_features, self.env.n_actions)
+        self.q_target = QNetwork(self.env.n_features, self.env.n_actions)
         self.q_target.load_state_dict(self.q.state_dict())
 
         # Hyperparameters
         self.learning_rate = 0.0005
         self.gamma  = 0.9
-        self.epsilon = 0.08
+        self.epsilon = 1.0
         self.batch_size = 16
         
     def sample_action(self, state):
         out = self.q(state)
         coin = random.random()
         if coin < self.epsilon:
-            return random.randint(0, 1)
+            rand = random.randint(0, self.env.n_actions-1)
+            print("Random action:", rand)
+            return rand
         else: 
-            return out.argmax().item()
+            argmax = out.argmax().item()
+            print("Argmax action:", argmax)
+            return argmax
 
 
     def optimize_model(self, q, q_target, memory, optimizer):
@@ -86,7 +84,7 @@ class DQNAgent():
             for _ in range(self.batch_size):
                 s, a, r, s_prime, done_mask = memory.sample(self.batch_size)
                 
-                q_out = q(s)
+                q_out = q.forward(s)
                 q_a = q_out.gather(1,a)
                 max_q_prime = q_target(s_prime).max(1)[0].unsqueeze(1)
                 target = r + self.gamma * max_q_prime * done_mask
@@ -99,50 +97,52 @@ class DQNAgent():
 
     def train(self):
         change_params_interval = 16
-        accum_reward = 0.0  
         optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
-
-        print(self.env)
+        reward_dict = dict()
 
         for episode in range(50):
-            self.epsilon = max(0.01, 0.08 - 0.01*(episode/200)) #Linear annealing from 8% to 1%
             s = self.env.reset()
+            
+            # Stats
+            reward_dict[episode] = list()
 
             for step in range(22):
 
+                print("\n-- Step", step)
+
                 a = self.sample_action(torch.from_numpy(s).float())
-                
                 s_prime, r, done, info = self.env.step(a)
 
-                print(step, "\tState\t", s)
-                print(step, "\tAction\t", a)
-                print(step, "\tReward\t", r)
-                print(step, "\tS_prime\t", s_prime)
+                print("State\t", str(s).replace("\n", ""))
+                print("Action\t", a)
+                print("Reward\t", r)
+                print("S_prime\t", str(s_prime).replace("\n", ""))
 
                 done_mask = 0.0 if done else 1.0
                 self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
 
                 s = s_prime
 
-                accum_reward += r
+                # Stats
+                reward_dict[episode].append(r)
 
                 if done:
                     break
                 
-                # break
-                # self.env.render()
-                
                 # Perform one step of the optimization (on the target network)
                 self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
 
-            # break
-
             if episode%change_params_interval == 0 and episode != 0:
                 self.q_target.load_state_dict(self.q.state_dict())
-                print("# of episode :{}, avg accum_reward : {:.1f}, buffer size : {}, epsilon : {:.1f}%".format(
-                                                                episode, accum_reward/change_params_interval, self.replay_memory.size(), self.epsilon*100))
-                accum_reward = 0.0
+            
+            print("\nEpisode:{}, Acc. reward: {:.2f}, Memory size: {}, Epsilon: {:.2f}%".format(
+                episode, sum(reward_dict[episode]), self.replay_memory.size(), self.epsilon*100))
         
+            with open('data.txt', 'a+') as f:
+                f.write(str(episode) + '\t' + str(self.epsilon) + '\t' + str(sum(reward_dict[episode])) + '\t' + str(reward_dict[episode]) + '\n')
+
+            self.epsilon = self.epsilon * 0.9
+
         self.env.close()
 
 
