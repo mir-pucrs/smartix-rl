@@ -15,8 +15,6 @@ class Environment():
         self.column_order = list(self.db.get_indexes().keys())
         self.column_count = list()
         self.window_size = 10
-
-        # Reward
         self.cost_history = list()
 
         # Environment
@@ -46,8 +44,15 @@ class Environment():
         return s_prime, reward
 
     def compute_reward(self, query):
-        cost = self.db.get_query_cost(query)
-        reward = (1/cost) * 1000000
+        self.cost_history.append(self.db.get_query_cost(query))
+        # Get avg of last 10 costs
+        if len(self.cost_history) >= self.window_size:
+            cost = sum(self.cost_history[-self.window_size:])
+            cost_avg = cost/self.window_size
+        else:
+            cost = sum(self.cost_history)
+            cost_avg = cost/len(self.cost_history)
+        reward = (1/cost_avg) * 1000000
         return reward
 
     def get_state(self):
@@ -97,8 +102,6 @@ class Environment():
         return query
     
     def update_column_count(self, query):
-        print(query)
-
         column_count = [0] * len(self.column_order)
         select_split = query.split("SELECT")
         for select in select_split:
@@ -112,7 +115,6 @@ class Environment():
                             break
                     for idx, column in enumerate(self.column_order):
                         if str(column).upper() in str(where).upper():
-                            print(column)
                             column_count[idx] += 1
         self.column_count.append(column_count)
 
@@ -136,5 +138,3 @@ class Environment():
 if __name__ == "__main__":
     from pprint import pprint
     env = Environment()
-
-    env.update_column_count(env.workload[6])
