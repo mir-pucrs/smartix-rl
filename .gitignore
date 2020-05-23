@@ -4,3 +4,5 @@ data/old_data/qtfr-from-08-10-18.txt
 .vscode
 backup
 db_credentials.json
+data.txt
+output.txt
