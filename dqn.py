@@ -113,10 +113,10 @@ class DQNAgent():
                 a = self.sample_action(torch.from_numpy(s).float())
                 s_prime, r, done, info = self.env.step(a)
 
-                print("State\t", str(s).replace("\n", ""))
+                print("State\t", str(s).replace("\n", "").replace(" ", ""))
                 print("Action\t", a)
                 print("Reward\t", r)
-                print("S_prime\t", str(s_prime).replace("\n", ""))
+                print("S_prime\t", str(s_prime).replace("\n", "").replace(" ", ""))
 
                 done_mask = 0.0 if done else 1.0
                 self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
