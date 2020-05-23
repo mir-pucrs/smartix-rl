@@ -85,30 +85,35 @@ class Environment():
                 break
 
     def step_workload(self):
-        """
-        arrumar o workoad iterator pra quando o numero de steps for maior
-        !!!!!!!!!!!!!!!!!!!!!!!
-        """
         query = self.workload[self.workload_iterator]
         self.db.execute(query, verbose=False)
         self.update_column_count(query)
-        self.workload_iterator += 1
+
+        if self.workload_iterator+1 == len(self.workload):
+            print("--- RESETTING WORKLOAD ITERATOR!!!!!")
+            self.workload_iterator = 0
+        else:
+            self.workload_iterator += 1
         return query
     
     def update_column_count(self, query):
+        print(query)
+
         column_count = [0] * len(self.column_order)
         select_split = query.split("SELECT")
         for select in select_split:
             if select != '':
-                where = select.split("WHERE")[1]
-                avoid = ['GROUP BY', 'ORDER BY', 'LIMIT']
-                for item in avoid:
-                    if item in where:
-                        where = where.split(item)[0]
-                        break
-                for idx, column in enumerate(self.column_order):
-                    if str(column).lower() in str(where).lower():
-                        column_count[idx] += 1
+                if "WHERE" in str(select).upper():
+                    where = select.split("WHERE")[1]
+                    avoid = ['GROUP BY', 'ORDER BY', 'LIMIT']
+                    for item in avoid:
+                        if item in where:
+                            where = where.split(item)[0]
+                            break
+                    for idx, column in enumerate(self.column_order):
+                        if str(column).upper() in str(where).upper():
+                            print(column)
+                            column_count[idx] += 1
         self.column_count.append(column_count)
 
     def load_workload(self, path):
@@ -132,8 +137,4 @@ if __name__ == "__main__":
     from pprint import pprint
     env = Environment()
 
-    env.update_column_count(env.workload[15])
-
-    state = env.get_state()
-
-    print(state)
+    env.update_column_count(env.workload[6])
