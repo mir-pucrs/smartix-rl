@@ -1,6 +1,6 @@
 from database import Database
 import numpy as np
-import sqlparse
+import time
 
 class Environment():
     def __init__(self, workload_path='workload/tpch.sql'):
@@ -27,23 +27,49 @@ class Environment():
         return s_prime, reward, False, dict()
 
     def apply_transition(self, action):
+        # Get next state
+        s = self.get_state()
+
         # Apply index change
         print("Applying index...")
         self.apply_index_change(action)
 
         # Execute next_query
         print("Executing query...")
-        next_query = self.step_workload()
+        next_query, elapsed_time = self.step_workload()
 
         # Compute reward
-        reward = self.compute_reward(next_query)
+        reward = self.compute_reward_cost(next_query)
+        # reward = self.compute_reward_columns(s, action)
+        # reward = self.compute_reward_time(next_query, elapsed_time)
 
-        # Get current state
+        # Get next state
         s_prime = self.get_state()
 
         return s_prime, reward
 
-    def compute_reward(self, query):
+    def compute_reward_columns(self, state, action):
+        indexes = state.tolist()[:int(-self.n_features/2)]
+        current_count = self.get_column_count()
+        if action >= self.n_actions/2:  # DROP
+            index = int(action - self.n_actions/2)
+            print('DROP', index)
+            if indexes[index] == 0:
+                reward = -100
+                print("- REPEATED!!!")
+            else:
+                reward = 100 * (current_count[index]+1)
+        else:  # CREATE
+            index = int(action)
+            print('CREATE', index)
+            if indexes[index] == 1:
+                reward = -100
+                print("- REPEATED!!!")
+            else:
+                reward = 100 * (current_count[index]+1)
+        return reward
+
+    def compute_reward_cost(self, query):
         self.cost_history.append(self.db.get_query_cost(query))
         # Get avg of last 10 costs
         if len(self.cost_history) >= self.window_size:
@@ -54,6 +80,9 @@ class Environment():
             cost_avg = cost/len(self.cost_history)
         reward = (1/cost_avg) * 1000000
         return reward
+
+    def compute_reward_time(self, elapsed_time):
+        return (1/elapsed_time) * 100
 
     def get_state(self):
         indexes = np.array(list(self.db.get_indexes().values()))
@@ -76,30 +105,36 @@ class Environment():
 
     def apply_index_change(self, action):
         indexes = self.db.get_indexes()
-        if action < self.n_actions/2: create = True
+        drop = False
+        if action >= self.n_actions/2: 
+            drop = True
+            action = int(action - self.n_actions/2)
         for idx, column in enumerate(indexes):
             if idx == action:
                 # Get the table
                 for table in self.db.tables.keys():
                     if column in self.db.tables[table]:
-                        if create:
-                            self.db.create_index(table, column)
-                        else:
+                        if drop:
                             self.db.drop_index(table, column)
+                        else:
+                            self.db.create_index(table, column)
                         break
                 break
 
     def step_workload(self):
         query = self.workload[self.workload_iterator]
-        self.db.execute(query, verbose=False)
-        self.update_column_count(query)
 
+        start = time.time()
+        # self.db.execute(query, verbose=False)
+        end = time.time()
+        elapsed_time = end - start
+        
+        self.update_column_count(query)
         if self.workload_iterator+1 == len(self.workload):
-            print("--- RESETTING WORKLOAD ITERATOR!!!!!")
             self.workload_iterator = 0
         else:
             self.workload_iterator += 1
-        return query
+        return query, elapsed_time
     
     def update_column_count(self, query):
         column_count = [0] * len(self.column_order)
@@ -126,6 +161,8 @@ class Environment():
 
     def reset(self):
         self.workload_iterator = 0
+        self.column_count = list()
+        self.cost_history = list()
         self.db.reset_indexes()
         return self.get_state()
     
@@ -138,3 +175,5 @@ class Environment():
 if __name__ == "__main__":
     from pprint import pprint
     env = Environment()
+
+    print(env.column_order)

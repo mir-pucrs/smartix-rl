@@ -62,7 +62,7 @@ class DQNAgent():
 
         # Hyperparameters
         self.learning_rate = 0.0005
-        self.gamma  = 0.9
+        self.gamma  = 0.99
         self.epsilon = 1.0
         self.batch_size = 16
         
@@ -96,52 +96,45 @@ class DQNAgent():
     
 
     def train(self):
-        change_params_interval = 16
+        change_params_interval = 22
         optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
-        reward_dict = dict()
 
-        for episode in range(50):
-            s = self.env.reset()
+        reward_list = list()
+
+        s = self.env.reset()
+
+        for step in range(10000):
+            print("\n-- Step", step)
+
+            a = self.sample_action(torch.from_numpy(s).float())
+
+            s_prime, r, done, info = self.env.step(a)
+
+            print("State\t", str(s).replace("\n", "").replace(" ", ""))
+            print("Action\t", a)
+            print("Reward\t", r)
+            print("S_prime\t", str(s_prime).replace("\n", "").replace(" ", ""))
+            reward_list.append(r)
+
+            done_mask = 0.0 if done else 1.0
+            self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
+
+            s = s_prime
             
-            # Stats
-            reward_dict[episode] = list()
+            # Perform one step of the optimization (on the target network)
+            self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
 
-            for step in range(22):
-
-                print("\n-- Step", step)
-
-                a = self.sample_action(torch.from_numpy(s).float())
-                s_prime, r, done, info = self.env.step(a)
-
-                print("State\t", str(s).replace("\n", "").replace(" ", ""))
-                print("Action\t", a)
-                print("Reward\t", r)
-                print("S_prime\t", str(s_prime).replace("\n", "").replace(" ", ""))
-
-                done_mask = 0.0 if done else 1.0
-                self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
-
-                s = s_prime
-
-                # Stats
-                reward_dict[episode].append(r)
-
-                if done:
-                    break
-                
-                # Perform one step of the optimization (on the target network)
-                self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
-
-            if episode%change_params_interval == 0 and episode != 0:
+            if step%change_params_interval == 0 and step != 0:
                 self.q_target.load_state_dict(self.q.state_dict())
             
-            print("\nEpisode:{}, Acc. reward: {:.2f}, Memory size: {}, Epsilon: {:.2f}%".format(
-                episode, sum(reward_dict[episode]), self.replay_memory.size(), self.epsilon*100))
-        
-            with open('data.txt', 'a+') as f:
-                f.write(str(episode) + '\t' + str(self.epsilon) + '\t' + str(sum(reward_dict[episode])) + '\t' + str(reward_dict[episode]) + '\n')
+                avg_reward = sum(reward_list[-change_params_interval:])/change_params_interval
+                print("\nStep:{}, Avg. reward: {:.2f}, Memory size: {}, Epsilon: {:.2f}%".format(
+                    step, avg_reward, self.replay_memory.size(), self.epsilon))
+            
+                with open('data.txt', 'a+') as f:
+                    f.write(str(step) + '\t' + str(self.epsilon) + '\t' + str(avg_reward) + '\n')
 
-            self.epsilon = self.epsilon * 0.9
+                self.epsilon = self.epsilon * 0.9
 
         self.env.close()
 
