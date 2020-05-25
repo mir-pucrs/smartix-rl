@@ -1,13 +1,12 @@
-import gym
 import collections
 import random
+import json
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from pprint import pprint
 from environment import Environment
 
 
@@ -124,7 +123,8 @@ class DQNAgent():
             # Perform one step of the optimization (on the target network)
             self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
 
-            if step%change_params_interval == 0 and step != 0:
+            print("contaloca", step+1%change_params_interval)
+            if (step+1) % change_params_interval == 0:
                 self.q_target.load_state_dict(self.q.state_dict())
             
                 avg_reward = sum(reward_list[-change_params_interval:])/change_params_interval
@@ -133,6 +133,9 @@ class DQNAgent():
             
                 with open('data.txt', 'a+') as f:
                     f.write(str(step) + '\t' + str(self.epsilon) + '\t' + str(avg_reward) + '\n')
+                
+                with open('reward_list.json', 'w+') as f:
+                    json.dump(reward_list, f, indent=4)
 
                 self.epsilon = self.epsilon * 0.9
 

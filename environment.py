@@ -1,6 +1,7 @@
 from database import Database
 import numpy as np
 import time
+import random
 
 class Environment():
     def __init__(self, workload_path='workload/tpch.sql'):
@@ -15,7 +16,8 @@ class Environment():
         self.column_order = list(self.db.get_indexes().keys())
         self.column_count = list()
         self.window_size = 10
-        self.cost_history = list()
+        self.cost_history = self.initialize_cost_history(self.window_size)
+        self.time_history = self.initialize_time_history(self.window_size)
 
         # Environment
         self.n_features = len(self.column_order) * 2
@@ -28,7 +30,7 @@ class Environment():
 
     def apply_transition(self, action):
         # Get next state
-        s = self.get_state()
+        # s = self.get_state()
 
         # Apply index change
         print("Applying index...")
@@ -36,12 +38,13 @@ class Environment():
 
         # Execute next_query
         print("Executing query...")
-        next_query, elapsed_time = self.step_workload()
+        # next_query, elapsed_time = self.step_workload()
+        next_query, elapsed_time = self.random_step_workload()
 
         # Compute reward
-        reward = self.compute_reward_cost(next_query)
+        # reward = self.compute_reward_cost(next_query)
         # reward = self.compute_reward_columns(s, action)
-        # reward = self.compute_reward_time(next_query, elapsed_time)
+        reward = self.compute_reward_time(elapsed_time)
 
         # Get next state
         s_prime = self.get_state()
@@ -78,11 +81,19 @@ class Environment():
         else:
             cost = sum(self.cost_history)
             cost_avg = cost/len(self.cost_history)
-        reward = (1/cost_avg) * 1000000
+        reward = (1/cost_avg) * 100000000
         return reward
 
     def compute_reward_time(self, elapsed_time):
-        return (1/elapsed_time) * 100
+        self.time_history.append(elapsed_time)
+        if len(self.time_history) >= self.window_size:
+            time = sum(self.time_history[-self.window_size:])
+            time_avg = time/self.window_size
+        else:
+            time = sum(self.time_history)
+            time_avg = time/len(self.time_history)
+        reward = (1/time_avg) * 100
+        return reward
 
     def get_state(self):
         indexes = np.array(list(self.db.get_indexes().values()))
@@ -125,7 +136,7 @@ class Environment():
         query = self.workload[self.workload_iterator]
 
         start = time.time()
-        # self.db.execute(query, verbose=False)
+        self.db.execute(query, verbose=False)
         end = time.time()
         elapsed_time = end - start
         
@@ -134,6 +145,18 @@ class Environment():
             self.workload_iterator = 0
         else:
             self.workload_iterator += 1
+        return query, elapsed_time
+    
+    def random_step_workload(self):
+        query = random.choice(self.workload)
+
+        start = time.time()
+        self.db.execute(query, verbose=False)
+        end = time.time()
+        elapsed_time = end - start
+        
+        self.update_column_count(query)
+
         return query, elapsed_time
     
     def update_column_count(self, query):
@@ -152,6 +175,27 @@ class Environment():
                         if str(column).upper() in str(where).upper():
                             column_count[idx] += 1
         self.column_count.append(column_count)
+    
+    def initialize_cost_history(self, window_size):
+        cost_history = list()
+        sample_queries = random.sample(self.workload, window_size)
+        for query in sample_queries:
+            cost_history.append(self.db.get_query_cost(query))
+            self.update_column_count(query)
+        return cost_history
+    
+    def initialize_time_history(self, window_size):
+        import random
+        time_history = list()
+        sample_queries = random.sample(self.workload, window_size)
+        for query in sample_queries:
+            start = time.time()
+            self.db.execute(query, verbose=False)
+            end = time.time()
+            elapsed_time = end - start
+            time_history.append(elapsed_time)
+            self.update_column_count(query)
+        return time_history
 
     def load_workload(self, path):
         with open(path, 'r') as f:
@@ -162,12 +206,12 @@ class Environment():
     def reset(self):
         self.workload_iterator = 0
         self.column_count = list()
-        self.cost_history = list()
+        self.cost_history = self.initialize_cost_history(self.window_size)
+        self.time_history = self.initialize_time_history(self.window_size)
         self.db.reset_indexes()
         return self.get_state()
     
     def close(self):
-        self.workload_iterator = 0
         self.db.reset_indexes()
         return self.db.close_connection()
 
