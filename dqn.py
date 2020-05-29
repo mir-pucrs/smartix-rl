@@ -95,7 +95,7 @@ class DQNAgent():
     
 
     def train(self):
-        change_params_interval = 22
+        change_params_interval = 44
         optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
 
         reward_list = list()
@@ -137,7 +137,7 @@ class DQNAgent():
                 with open('reward_list.json', 'w+') as f:
                     json.dump(reward_list, f, indent=4)
 
-                self.epsilon = self.epsilon * 0.9
+                self.epsilon = self.epsilon * 0.95
 
         self.env.close()
 
