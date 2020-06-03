@@ -1,12 +1,12 @@
-from database import Database
+from pg_database import PGDatabase
 import numpy as np
 import time
 import random
 
 class Environment():
-    def __init__(self, workload_path='workload/tpch.sql'):
+    def __init__(self, workload_path='workload/tpch.sql', allow_columns=False):
         # Database instance
-        self.db = Database()
+        self.db = PGDatabase()
 
         # Workload
         self.workload = self.load_workload(workload_path)
@@ -17,11 +17,19 @@ class Environment():
         self.column_count = list()
         self.window_size = 10
         self.cost_history = self.initialize_cost_history(self.window_size)
-        self.time_history = self.initialize_time_history(self.window_size)
+        # self.time_history = self.initialize_time_history(self.window_size)
+
+        ######################
+        self.allow_columns = allow_columns
+        ######################
 
         # Environment
-        self.n_features = len(self.column_order) * 2
-        self.n_actions = self.n_features
+        if self.allow_columns:
+            self.n_features = len(self.column_order) * 2
+            self.n_actions = self.n_features
+        else:
+            self.n_features = len(self.column_order)
+            self.n_actions = self.n_features
 
     def step(self, action):
         # Apply action
@@ -33,23 +41,44 @@ class Environment():
         # s = self.get_state()
 
         # Apply index change
-        print("Applying index...")
+        # print("Applying index...")
         self.apply_index_change(action)
 
         # Execute next_query
-        print("Executing query...")
-        # next_query, elapsed_time = self.step_workload()
-        next_query, elapsed_time = self.random_step_workload()
+        # print("Executing query...")
+        next_query, elapsed_time = self.step_workload()
+        # next_query, elapsed_time = self.random_step_workload()
 
         # Compute reward
+        reward = self.compute_reward_cost_all()
         # reward = self.compute_reward_cost(next_query)
         # reward = self.compute_reward_columns(s, action)
-        reward = self.compute_reward_time(elapsed_time)
+        # reward = self.compute_reward_time(elapsed_time)
 
         # Get next state
         s_prime = self.get_state()
 
         return s_prime, reward
+
+    def compute_reward_cost_all(self):
+        costs = [self.db.get_query_cost(q) for q in self.workload]
+        reward = (1/sum(costs)) * 10000000000
+        return reward
+
+    def compute_reward_cost(self, query):
+        # cost = self.db.get_query_cost(query)
+        # return (1/cost) * 100000000
+
+        self.cost_history.append(self.db.get_query_cost(query))
+        # Get avg of last 10 costs
+        if len(self.cost_history) >= self.window_size:
+            cost = sum(self.cost_history[-self.window_size:])
+            cost_avg = cost/self.window_size
+        else:
+            cost = sum(self.cost_history)
+            cost_avg = cost/len(self.cost_history)
+        reward = (1/cost_avg) * 100000000
+        return reward
 
     def compute_reward_columns(self, state, action):
         indexes = state.tolist()[:int(-self.n_features/2)]
@@ -72,18 +101,6 @@ class Environment():
                 reward = 100 * (current_count[index]+1)
         return reward
 
-    def compute_reward_cost(self, query):
-        self.cost_history.append(self.db.get_query_cost(query))
-        # Get avg of last 10 costs
-        if len(self.cost_history) >= self.window_size:
-            cost = sum(self.cost_history[-self.window_size:])
-            cost_avg = cost/self.window_size
-        else:
-            cost = sum(self.cost_history)
-            cost_avg = cost/len(self.cost_history)
-        reward = (1/cost_avg) * 100000000
-        return reward
-
     def compute_reward_time(self, elapsed_time):
         self.time_history.append(elapsed_time)
         if len(self.time_history) >= self.window_size:
@@ -96,9 +113,13 @@ class Environment():
         return reward
 
     def get_state(self):
-        indexes = np.array(list(self.db.get_indexes().values()))
-        current_count = np.array(self.get_column_count())
-        state = np.concatenate((indexes, current_count))
+        if self.allow_columns:
+            indexes = np.array(list(self.db.get_indexes().values()))
+            current_count = np.array(self.get_column_count())
+            state = np.concatenate((indexes, current_count))
+        else:
+            indexes = np.array(list(self.db.get_indexes().values()))
+            state = indexes
         return state
 
     def get_column_count(self):
@@ -126,9 +147,9 @@ class Environment():
                 for table in self.db.tables.keys():
                     if column in self.db.tables[table]:
                         if drop:
-                            self.db.drop_index(table, column)
+                            self.db.drop_index(table, column, verbose=False)
                         else:
-                            self.db.create_index(table, column)
+                            self.db.create_index(table, column, verbose=False)
                         break
                 break
 
@@ -136,7 +157,7 @@ class Environment():
         query = self.workload[self.workload_iterator]
 
         start = time.time()
-        self.db.execute(query, verbose=False)
+        # self.db.execute(query, verbose=False)
         end = time.time()
         elapsed_time = end - start
         
@@ -151,7 +172,7 @@ class Environment():
         query = random.choice(self.workload)
 
         start = time.time()
-        self.db.execute(query, verbose=False)
+        # self.db.execute(query, verbose=False)
         end = time.time()
         elapsed_time = end - start
         
@@ -207,7 +228,7 @@ class Environment():
         self.workload_iterator = 0
         self.column_count = list()
         self.cost_history = self.initialize_cost_history(self.window_size)
-        self.time_history = self.initialize_time_history(self.window_size)
+        # self.time_history = self.initialize_time_history(self.window_size)
         self.db.reset_indexes()
         return self.get_state()
     
