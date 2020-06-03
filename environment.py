@@ -19,6 +19,11 @@ class Environment():
         self.cost_history = self.initialize_cost_history(self.window_size)
         # self.time_history = self.initialize_time_history(self.window_size)
 
+        self.previous_cost = 0
+
+        ############
+        # LATER I COULD MULTIPLY HOW GOOD OR HOW BAD DEPENDING ON THE DIFFERENCE FROM THE PREVIOUS (WEIGHT REWARD)
+
         ######################
         self.allow_columns = allow_columns
         ######################
@@ -62,8 +67,19 @@ class Environment():
 
     def compute_reward_cost_all(self):
         costs = [self.db.get_query_cost(q) for q in self.workload]
-        reward = (1/sum(costs)) * 10000000000
+        # reward = (1/sum(costs)) * 10000000000
+        current_cost = sum(costs)
+        diff = self.previous_cost - current_cost
+        print(self.previous_cost, current_cost, diff)
+        if diff > 0: 
+            reward = (diff+0.00001)
+        else: 
+            reward = (diff+0.00001) * 2
+        self.previous_cost = current_cost
+        print(reward)
+        print("")
         return reward
+        # return reward
 
     def compute_reward_cost(self, query):
         # cost = self.db.get_query_cost(query)
@@ -241,4 +257,4 @@ if __name__ == "__main__":
     from pprint import pprint
     env = Environment()
 
-    print(env.column_order)
+    pprint(env.column_order)

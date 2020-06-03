@@ -136,10 +136,10 @@ class DQNAgent():
 
                 print("State\t", str(s).replace("\n", "").replace(" ", ""))
             
-                with open('data{}.txt'.format(self.flag), 'a+') as f:
+                with open('data/data{}.txt'.format(self.flag), 'a+') as f:
                     f.write(str(step) + '\t' + str(self.epsilon) + '\t' + str(avg_reward) + '\n')
                 
-                with open('reward_list{}.json'.format(self.flag), 'w+') as f:
+                with open('data/reward_list{}.json'.format(self.flag), 'w+') as f:
                     json.dump(reward_list, f, indent=4)
 
                 self.epsilon = self.epsilon * 0.95
@@ -185,10 +185,10 @@ class DQNAgent():
 
             print("State\t", str(s).replace("\n", "").replace(" ", ""))
         
-            with open('data{}.txt'.format(self.flag), 'a+') as f:
+            with open('data/data{}.txt'.format(self.flag), 'a+') as f:
                 f.write(str(step) + '\t' + str(self.epsilon) + '\t' + str(avg_reward) + '\n')
             
-            with open('reward_list{}.json'.format(self.flag), 'w+') as f:
+            with open('data/reward_list{}.json'.format(self.flag), 'w+') as f:
                 json.dump(reward_list, f, indent=4)
 
             self.epsilon = self.epsilon * 0.95
@@ -203,8 +203,8 @@ if __name__ == "__main__":
     agent = DQNAgent(env=Environment(allow_columns=True), flag='_with_columns')
     agent.train()
 
-    agent = DQNAgent(env=Environment(), flag='_without_columns_with_eps')
-    agent.train_eps()
+    # agent = DQNAgent(env=Environment(), flag='_without_columns_with_eps')
+    # agent.train_eps()
 
-    agent = DQNAgent(env=Environment(allow_columns=True), flag='_with_columns_with_eps')
-    agent.train_eps()
+    # agent = DQNAgent(env=Environment(allow_columns=True), flag='_with_columns_with_eps')
+    # agent.train_eps()
