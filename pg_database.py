@@ -1,4 +1,5 @@
 import psycopg2
+import json
 
 
 class PGDatabase():
@@ -27,11 +28,6 @@ class PGDatabase():
         self.tables = self.get_tables()
 
     def get_query_cost(self, query):
-        if self.analyze:
-            for table in self.tables.keys():
-                command = "ANALYZE {};".format(table)
-                self.execute(command, verbose=False)
-
         # Get cost
         command = "EXPLAIN (FORMAT JSON) {}".format(query)
         output = self.execute_fetchall(command, verbose=False)
@@ -109,6 +105,10 @@ class PGDatabase():
         else:
             command = "CREATE INDEX smartix_%s ON %s (%s);" % (column, table, column)
             self.execute(command, verbose)
+        if self.analyze:
+            for table in self.tables.keys():
+                command = "ANALYZE {};".format(table)
+                self.execute(command, verbose=False)
 
     def reset_indexes(self):
         if self.hypo:
@@ -155,19 +155,33 @@ class PGDatabase():
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from pprint import pprint
-    import json
 
 
     #################################################
 
 
     db = PGDatabase()
+    db.analyze = True
 
-    db.create_index('lineitem', 'l_shipdate')
-    pprint(db.get_indexes())
+    # db.create_index('lineitem', 'l_shipdate')
+    # pprint(db.get_indexes())
 
-    db.drop_index('lineitem', 'l_shipdate')
-    pprint(db.get_indexes())
+    # db.drop_index('lineitem', 'l_shipdate')
+    # pprint(db.get_indexes())
+
+    # Get workload
+    with open('workload/tpch.sql', 'r') as f:
+        data = f.read()
+    workload = data.split('\n')
+
+    # First
+    first_cost = 0
+    for i, q in enumerate(workload):
+        out = db.execute_fetchall("EXPLAIN "+q, verbose=False)
+        cost = db.get_query_cost(q)
+        # print(i, cost)
+        first_cost += cost
+    print("First cost:", first_cost)
 
     db.close_connection()
 
