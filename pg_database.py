@@ -1,26 +1,38 @@
 import psycopg2
-import json
 
 
 class PGDatabase():
-    def __init__(self):
-        self.connection = psycopg2.connect(user = "gabriel",
-                                  password = "gabriel",
-                                  host = "127.0.0.1",
-                                  port = "5432",
-                                  database = "tpch")
+    def __init__(self, hypo=True, analyze=False):
+        # Get credentials
+        with open('db_credentials_pg.json', 'r') as f:
+            self.credentials = json.load(f)
 
-        self.dbname = 'tpch'
-
+        # Connect to database
+        try:
+            self.conn = psycopg2.connect(user = self.credentials['user'],
+                                         password = self.credentials['password'],
+                                         host = self.credentials['host'],
+                                         port = self.credentials['port'],
+                                         database = self.credentials['database'])
+            # Set to autocommit transactions
+            self.conn.autocommit = True
+        except psycopg2.Error as err: 
+            print("ERROR: {}".format(err))
+        
+        # Create hypothetical indexes
+        self.hypo = hypo
+        # Analyze tables before getting cost
+        self.analyze = analyze
         # Get tables and indexes
         self.tables = self.get_tables()
 
     def get_query_cost(self, query):
-        # # Analyze tables
-        # for table in self.tables.keys():
-        #     command = "ANALYZE {};".format(table)
-        #     self.execute(command, verbose=False)
-        # Get query cost
+        if self.analyze:
+            for table in self.tables.keys():
+                command = "ANALYZE {};".format(table)
+                self.execute(command, verbose=False)
+
+        # Get cost
         command = "EXPLAIN (FORMAT JSON) {}".format(query)
         output = self.execute_fetchall(command, verbose=False)
         explain = output[0][0][0]
@@ -47,55 +59,73 @@ class PGDatabase():
         # Return dict with valid columns for indexing
         return tables
 
-
-    ######################### FIXXXXXX COMMAND BELOW
     def get_indexes(self):
-        indexes = dict()
-        for table in self.tables.keys():
-            ######################### FIXXXXXX COMMAND BELOW
-            command = 'SHOW INDEX FROM {}'.format(table)
+        if self.hypo:
+            command = "SELECT * FROM hypopg_list_indexes();"
             output = self.execute_fetchall(command, verbose=False)
-            table_indexes = list(set([row[4] for row in output]))
-            for column in self.tables[table]:
-                if column in table_indexes:
-                    indexes[column] = 1
-                else:
-                    indexes[column] = 0
-        return indexes
-
-    def drop_index(self, table, column):
-        if 'smartix_' in column:
-            command = ("DROP INDEX %s;" % (column))
+            index_names = list(set([row[1] for row in output]))
+            indexes = dict()
+            for table in self.tables.keys():
+                for column in self.tables[table]:
+                    if column in str(index_names):
+                        indexes[column] = 1
+                    else:
+                        indexes[column] = 0
+            return indexes
         else:
-            command = ("DROP INDEX smartix_%s;" % (column))
-        self.execute(command)
-
-    def create_index(self, table, column):
-        command = "CREATE INDEX smartix_%s ON %s (%s);" % (column, table, column)
-        self.execute(command)
-
-
-    ######################### FIXXXXXX COMMAND BELOW
-    def reset_indexes(self):
-        for table in self.tables.keys():
-            # Get indexes for table
-            ######################### FIXXXXXX COMMAND BELOW
-            command = "SHOW INDEXES FROM {};".format(table)
+            command = "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_indexes ixs, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey) AND ixs.schemaname = 'public' AND i.relname = ixs.indexname ORDER BY t.relname, i.relname;"
             output = self.execute_fetchall(command, verbose=False)
+            index_names = list(set([row[1] for row in output]))
+            indexes = dict()
+            for table in self.tables.keys():
+                for column in self.tables[table]:
+                    if column in str(index_names):
+                        indexes[column] = 1
+                    else:
+                        indexes[column] = 0
+            return indexes
 
-            index_names = list()
+    def drop_index(self, table, column, verbose=True):
+        if self.hypo:
+            # Get all indexes
+            command = "SELECT * FROM hypopg_list_indexes();"
+            indexes = self.execute_fetchall(command, verbose=False)
+            # Iterate indexes and check column match
+            for index in indexes:
+                if table == index[3] and column in index[1]:
+                    command = "SELECT * FROM hypopg_drop_index(%s);" % (index[0])
+                    self.execute(command, verbose)
+        else:
+            if 'smartix_' in column:
+                command = ("DROP INDEX %s;" % (column))
+            else:
+                command = ("DROP INDEX smartix_%s;" % (column))
+            self.execute(command, verbose)
+
+    def create_index(self, table, column, verbose=True):
+        if self.hypo:
+            command = "SELECT * FROM hypopg_create_index('CREATE INDEX smartix_%s ON %s (%s)');" % (column, table, column)
+            self.execute(command, verbose)
+        else:
+            command = "CREATE INDEX smartix_%s ON %s (%s);" % (column, table, column)
+            self.execute(command, verbose)
+
+    def reset_indexes(self):
+        if self.hypo:
+            command = "SELECT * FROM hypopg_reset();"
+            self.execute(command, verbose=False)
+        else:
+            command = "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_indexes ixs, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey) AND ixs.schemaname = 'public' AND i.relname = ixs.indexname ORDER BY t.relname, i.relname;"
+            output = self.execute_fetchall(command, verbose=False)
             for index in output:
-                index_names.append(index[2])
-
-            for index in index_names:
-                if "smartix_" in index:
-                    self.drop_index(table, index)
-                    command = "DROP INDEX %s;" % (index)
-        return True
+                index_name = index[1]
+                if "smartix_" in index_name:
+                    print("Drop", index_name)
+                    self.drop_index(None, index_name)
 
     def close_connection(self):
         try:
-            self.connection.close()
+            self.conn.close()
             return True
         except psycopg2.DatabaseError as err:
             print('ERROR: {}'.format(err))
@@ -103,7 +133,7 @@ class PGDatabase():
 
     def execute(self, command, verbose=True):
         try:
-            cur = self.connection.cursor()
+            cur = self.conn.cursor()
             cur.execute(command)
             cur.close()
             if verbose: print('OK: {}'.format(command))
@@ -112,10 +142,9 @@ class PGDatabase():
     
     def execute_fetchall(self, command, verbose=True):
         try:
-            cur = self.connection.cursor()
+            cur = self.conn.cursor()
             cur.execute(command)
             output = cur.fetchall()
-            # print(output)
             cur.close()
             if verbose: print('OK: {}'.format(command))
             return output
@@ -124,10 +153,91 @@ class PGDatabase():
 
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
     from pprint import pprint
+    import json
+
+
+    #################################################
+
+
     db = PGDatabase()
 
-    # query = "SELECT l_returnflag, l_linestatus, sum(l_quantity) AS sum_qty, sum(l_extendedprice) AS sum_base_price, sum(l_extendedprice * (1 - l_discount)) AS sum_disc_price, sum(l_extendedprice * (1 - l_discount) * (1 + l_tax)) AS sum_charge, avg(l_quantity) AS avg_qty, avg(l_extendedprice) AS avg_price, avg(l_discount) AS avg_disc, count(*) AS count_order FROM LINEITEM WHERE l_shipdate <= date '1994-7-17' - interval '108' day GROUP BY l_returnflag, l_linestatus ORDER BY l_returnflag, l_linestatus;"
+    db.create_index('lineitem', 'l_shipdate')
+    pprint(db.get_indexes())
 
-    # cost = db.get_query_cost(query)
-    pprint(db.tables)
+    db.drop_index('lineitem', 'l_shipdate')
+    pprint(db.get_indexes())
+
+    db.close_connection()
+
+
+    #################################################
+
+
+    # history_analyze = list()
+    # history_normal = list()
+
+    # for i in range(50):
+    #     # Create DB
+    #     if i % 2 == 0:
+    #         print("")
+    #         print(i, "Normal")
+    #         db = PGDatabase()
+    #     else:
+    #         print("")
+    #         print(i, "Analyze")
+    #         db = PGDatabase(analyze=True)
+    #     db.reset_indexes()
+
+    #     # Get workload
+    #     with open('workload/tpch.sql', 'r') as f:
+    #         data = f.read()
+    #     workload = data.split('\n')
+
+    #     # First
+    #     first_cost = 0
+    #     for q in workload:
+    #         out = db.execute_fetchall("EXPLAIN "+q, verbose=False)
+    #         cost = db.get_query_cost(q)
+    #         first_cost += cost
+    #     print("First cost:", first_cost)
+        
+    #     # Create
+    #     for table in db.tables:
+    #         for column in db.tables[table]:
+    #             db.create_index(table, column, verbose=False)
+
+    #     # Second
+    #     second_cost = 0
+    #     for q in workload:
+    #         out = db.execute_fetchall("EXPLAIN "+q, verbose=False)
+    #         cost = db.get_query_cost(q)
+    #         second_cost += cost
+    #     print("Second cost:", second_cost)
+
+    #     # Difference
+    #     diff = first_cost - second_cost
+    #     print("Difference", diff)
+    #     if i % 2 == 0: history_normal.append(diff)
+    #     else: history_analyze.append(diff)
+
+    #     # Close DB
+    #     db.close_connection()
+
+    # # Save results
+    # with open('normal.json', 'w+') as f:
+    #     json.dump(history_normal, f, indent=4)
+    # with open('analyze.json', 'w+') as f:
+    #     json.dump(history_analyze, f, indent=4)
+
+    # # Load results
+    # with open('normal.json', 'r') as f:
+    #     normal = json.load(f)
+    # with open('analyze.json', 'r') as f:
+    #     analyze = json.load(f)
+
+    # # Plot
+    # plt.plot(normal)
+    # plt.plot(analyze)
+    # plt.show()
