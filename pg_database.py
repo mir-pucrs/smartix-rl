@@ -34,6 +34,23 @@ class PGDatabase():
         explain = output[0][0][0]
         cost = float(explain['Plan']['Total Cost'])
         return cost
+    
+    def get_query_use(self, query, column):
+        # Get explain plan
+        command = "EXPLAIN {}".format(query)
+        output = self.execute_fetchall(command, verbose=False)
+        # Start counting
+        count = 0
+        for row in output:
+            if 'pkey' in row[0]: continue
+            if 'fkey' in row[0]: continue
+            if 'Index Scan using' in row[0] and column in row[0]:
+                count = 1
+                return count
+            elif 'Index Scan on' in row[0] and column in row[0]:
+                count = 1
+                return count
+        return count
 
     def get_tables(self):
         # Fetch constraints
@@ -161,27 +178,26 @@ if __name__ == "__main__":
 
 
     db = PGDatabase()
-    db.analyze = True
-
-    # db.create_index('lineitem', 'l_shipdate')
-    # pprint(db.get_indexes())
-
-    # db.drop_index('lineitem', 'l_shipdate')
-    # pprint(db.get_indexes())
 
     # Get workload
     with open('workload/tpch.sql', 'r') as f:
         data = f.read()
     workload = data.split('\n')
 
-    # First
-    first_cost = 0
+    # db.create_index('lineitem', 'l_shipdate', verbose=False)
+    # db.create_index('part', 'p_size', verbose=False)
+    # db.create_index('part', 'p_container', verbose=False)
+    # db.create_index('part', 'p_brand', verbose=False)
+    # db.create_index('orders', 'o_orderdate', verbose=False)
+    db.create_index('customer', 'c_acctbal', verbose=False)
+
+    # Count uses
+    total_count = 0
     for i, q in enumerate(workload):
-        out = db.execute_fetchall("EXPLAIN "+q, verbose=False)
-        cost = db.get_query_cost(q)
-        # print(i, cost)
-        first_cost += cost
-    print("First cost:", first_cost)
+        count = db.get_query_use(q, 'c_acctbal')
+        print(i, count)
+        total_count += count
+    print("Total count:", total_count)
 
     db.close_connection()
 
