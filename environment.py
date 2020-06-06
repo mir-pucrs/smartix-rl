@@ -1,18 +1,17 @@
-from pg_database import PGDatabase
+from pg_database import PG_Database
 import numpy as np
 import time
 import random
 
 class Environment():
-    def __init__(self, workload_path='workload/tpch.sql', allow_columns=True, window_size = 20):
+    def __init__(self, workload_path='data/workload/tpch.sql', allow_columns=True, window_size = 20):
         # Database instance
-        self.db = PGDatabase()
+        self.db = PG_Database()
 
         # Workload
         self.workload = self.load_workload(workload_path)
         self.workload_iterator = 0
         self.column_order = list(self.db.get_indexes().keys())
-        
 
         # Window-related
         self.window_size = window_size
@@ -30,35 +29,17 @@ class Environment():
             self.n_features = len(self.column_order)
             self.n_actions = len(self.column_order)
 
-        # Stats
-        self.trues = 0
-        self.falses = 0
-        self.acts = []
-
     """
         Acessed from outside
         - step(action)
         - reset()
         - close()
     """
-
     def step(self, action):
         # Apply action
         s_prime, reward = self.apply_transition(action)
 
-        # Stats
-        self.acts.append(action)
-        acts = 999
-        falses = self.falses
-        trues = self.trues
-        if (self.trues + self.falses) == 256:
-            self.trues = 0
-            self.falses = 0
-            acts = len(list(set(self.acts)))
-            self.acts = []
-            
-        return s_prime, reward, False, dict(), trues, falses, acts
-        # return s_prime, reward, False, dict()
+        return s_prime, reward, False, dict()
     
     def reset(self):
         # Workload and indexes
@@ -69,10 +50,6 @@ class Environment():
         self.workload_buffer = workload_buffer
         self.column_count = column_count
         self.cost_history = cost_history
-        # Stats
-        self.trues = 0
-        self.falses = 0
-        self.acts = []
 
         return self.get_state()
     
@@ -91,33 +68,27 @@ class Environment():
     def compute_reward_index_scan(self, drop, table, column):
         # Check whether the index could be used in the last len(window) queries
         total_count = 0
-        if drop:
-            print("Foi drop, cria ficticio")
-            self.db.create_index(table, column, verbose=False)
+        if drop: self.db.create_index(table, column, verbose=False)
         for q in self.workload_buffer:
             count = self.db.get_query_use(q, column)
             total_count += count
-        if drop:
-            print("E dropa ficticio")
-            self.db.drop_index(table, column, verbose=False)
+        if drop: self.db.drop_index(table, column, verbose=False)
 
-        # window_count = self.get_column_count_window()
-        # Multiply it by its count in the state
-
-        reward = total_count * 1000
+        reward = total_count * 50
         if drop and total_count > 0:
             reward = reward * -1
-            print("DROP", column, total_count, reward)
+            # print("DROP", column, total_count, reward)
         elif drop:
-            reward = 1
-            print("DROP", column, total_count, reward)
+            reward = -1
+            # print("DROP", column, total_count, reward)
         elif not drop and total_count == 0:
-            reward = -1000
-            print("CREATE", column, total_count, reward)
+            reward = -50
+            # print("CREATE", column, total_count, reward)
         else:
-            print("CREATE", column, total_count, reward)
+            reward = reward * 2
+            # print("CREATE", column, total_count, reward)
 
-        print("")
+        # print("")
         return reward
 
     def compute_reward_sum_cost_all(self):
@@ -157,10 +128,12 @@ class Environment():
             # reward = self.compute_reward_sum_cost_all()
             # reward = self.compute_reward_avg_cost_window(next_query)
             reward = self.compute_reward_index_scan(drop, table, column)
+        elif drop:
+            reward = -1
         else:
-            reward = -1000
-            print("NONE!", column, reward)
-            print("")
+            reward = -500
+            # print("NONE!", column, reward)
+            # print("")
 
         # Get next state
         s_prime = self.get_state()
@@ -181,22 +154,18 @@ class Environment():
                         if drop:
                             if indexes[column] == 0: 
                                 # print("FALSE - DRP", column)
-                                self.falses += 1
                                 return False, drop, table, column
                             else:
                                 # print("TRUE  - DRP", column)
                                 self.db.drop_index(table, column, verbose=False)
-                                self.trues += 1
                                 return True, drop, table, column
                         else:
                             if indexes[column] == 1:
                                 # print("FALSE - CRT", column)
-                                self.falses += 1
                                 return False, drop, table, column
                             else: 
                                 # print("TRUE  - CRT", column)
                                 self.db.create_index(table, column, verbose=False)
-                                self.trues += 1
                                 return True, drop, table, column
 
     def step_workload(self):
