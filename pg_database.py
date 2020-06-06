@@ -2,10 +2,10 @@ import psycopg2
 import json
 
 
-class PGDatabase():
+class PG_Database():
     def __init__(self, hypo=True, analyze=False):
         # Get credentials
-        with open('db_credentials_pg.json', 'r') as f:
+        with open('data/db_credentials_pg.json', 'r') as f:
             self.credentials = json.load(f)
 
         # Connect to database

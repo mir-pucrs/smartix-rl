@@ -2,10 +2,10 @@ import pyodbc
 import json
 
 
-class Database():
+class MySQL_Database():
     def __init__(self):
         # Get database credentials
-        with open('db_credentials.json', 'r') as f:
+        with open('data/db_credentials.json', 'r') as f:
             credentials = f.read() 
         self.credentials = json.loads(credentials)
 
