@@ -1,210 +1,281 @@
-import collections
 import random
+import math
+import time
 import json
+import os
+import collections
+import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 
 from environment import Environment
+import gym
 
+from pprint import pprint
 
 class ReplayMemory():
-    def __init__(self, memory_size):
-        self.memory = collections.deque(maxlen=memory_size)
+    def __init__(self, capacity):
+        self.memory = collections.deque(maxlen=capacity)
 
-    def put(self, transition):
-        self.memory.append(transition)
-    
-    def sample(self, n):
-        mini_batch = random.sample(self.memory, n)
-        s_lst, a_lst, r_lst, s_prime_lst, done_mask_lst = [], [], [], [], []
-        
-        for transition in mini_batch:
-            s, a, r, s_prime, done_mask = transition
-            s_lst.append(s)
-            a_lst.append([a])
-            r_lst.append([r])
-            s_prime_lst.append(s_prime)
-            done_mask_lst.append([done_mask])
-
-        return torch.tensor(s_lst, dtype=torch.float), \
-            torch.tensor(a_lst), \
-            torch.tensor(r_lst), \
-            torch.tensor(s_prime_lst, dtype=torch.float), \
-            torch.tensor(done_mask_lst)
-
-    def size(self):
+    def __len__(self):
         return len(self.memory)
 
+    def add(self, s0, a, r, s1, done):
+        self.memory.append((np.expand_dims(s0, 0), a, r, np.expand_dims(s1, 0), done))
 
-class QNetwork(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(input_size, 256)
-        self.fc2 = nn.Linear(256, output_size)
+    def sample(self, batch_size):
+        s0, a, r, s1, done = zip(*random.sample(self.memory, batch_size))
+        s0 = torch.tensor(np.concatenate(s0), dtype=torch.float)
+        s1 = torch.tensor(np.concatenate(s1), dtype=torch.float)
+        a = torch.tensor(a, dtype=torch.long)
+        r = torch.tensor(r, dtype=torch.float)
+        done = torch.tensor(done, dtype=torch.float)
+        return s0, a, r, s1, done
+
+
+class QNet(nn.Module):
+    def __init__(self, n_features, n_actions):
+        super(QNet, self).__init__()
+
+        # Architecture
+        self.nn = nn.Sequential(
+            nn.Linear(n_features, 64),
+            # nn.ReLU(),
+            # nn.Linear(64, 64),
+            nn.ReLU(),
+            nn.Linear(64, n_actions)
+        )
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+        return self.nn(x)
 
 
-class DQNAgent():
-    def __init__(self, replay_memory=ReplayMemory(50000), env=Environment(), flag=''):
-        self.env = env
-        self.replay_memory = replay_memory
-        self.q = QNetwork(self.env.n_features, self.env.n_actions)
-        self.q_target = QNetwork(self.env.n_features, self.env.n_actions)
-        self.q_target.load_state_dict(self.q.state_dict())
+class Agent:
+    def __init__(self, env=Environment(), output_path=str(time.time())):
+        # Log
+        path = os.path.join('output', output_path)
+        if not os.path.isdir(path): os.makedirs(path)
+        self.output_path = path + '/'
 
         # Hyperparameters
-        self.learning_rate = 0.0005
-        self.gamma  = 0.99
-        self.epsilon = 1.0
-        self.batch_size = 128
+        self.gamma = 0.9
+        self.alpha = 1e-4
 
-        self.flag = flag
+        # Training
+        self.n_steps = 100000  # 100k
+        self.memory_size = 10000  # 10k
+        self.memory = ReplayMemory(self.memory_size)
+        self.target_update_interval = 128
+        self.batch_size = 256
 
-        
-    def sample_action(self, state):
-        out = self.q(state)
-        coin = random.random()
-        if coin < self.epsilon:
-            rand = random.randint(0, self.env.n_actions-1)
-            # print("Random action:", rand)
-            return rand
-        else: 
-            argmax = out.argmax().item()
-            # print("Argmax action:", argmax)
-            return argmax
+        # Epsilon
+        self.epsilon = 1  # 100%
+        self.epsilon_min = 0.01  # 1%
+        self.epsilon_decay = 0.1  # 10%
 
+        # Environment
+        self.env = env
+        self.n_features = self.env.n_features
+        self.n_actions = self.env.n_actions
+        # self.env = gym.make('CartPole-v0')
+        # self.n_features = self.env.observation_space.shape[0]
+        # self.n_actions = self.env.action_space.n
 
-    def optimize_model(self, q, q_target, memory, optimizer):
-        if self.replay_memory.size() > self.batch_size:
-            # for _ in range(self.batch_size):
-            s, a, r, s_prime, done_mask = memory.sample(self.batch_size)
-            
-            q_out = q.forward(s)
-            q_a = q_out.gather(1,a)
-            max_q_prime = q_target(s_prime).max(1)[0].unsqueeze(1)
-            target = r + self.gamma * max_q_prime * done_mask
+        # Model
+        self.qnet = QNet(self.n_features, self.n_actions)
+        self.qnet_target = QNet(self.n_features, self.n_actions)
+        self.qnet_target.load_state_dict(self.qnet.state_dict())
+        self.optimizer = torch.optim.Adam(self.qnet.parameters(), lr=self.alpha)
 
-            loss = F.smooth_l1_loss(q_a, target)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+    """
+        Model
+    """
+    def load_model(self):
+        self.qnet.load_state_dict(torch.load(self.output_path+'model.pkl'))
+
+    def save_model(self):
+        torch.save(self.qnet.state_dict(), self.output_path+'model.pkl')
+
+    """
+        Training
+    """
+    def choose_action(self, state):
+        if random.random() > self.epsilon:
+            state = torch.tensor(state, dtype=torch.float).unsqueeze(0)
+            q_value = self.qnet.forward(state)
+            action = q_value.max(1)[1].item()
+            self.argmax_cnt += 1
+        else:
+            action = random.randrange(self.n_actions)
+            self.random_cnt += 1
+        return action
+
+    def learn_batch(self):
+        s0, a, r, s1, done = self.memory.sample(self.batch_size)
+
+        # Normal DDQN update
+        q_values = self.qnet(s0)
+        q_value = q_values.gather(1, a.unsqueeze(1)).squeeze(1)
+        # Double Q-learning
+        online_next_q_values = self.qnet(s1)
+        _, max_indicies = torch.max(online_next_q_values, dim=1)
+        target_q_values = self.qnet_target(s1)
+        next_q_value = torch.gather(target_q_values, 1, max_indicies.unsqueeze(1))
+        expected_q_value = r + self.gamma * next_q_value.squeeze() * (1 - done)
+
+        loss = (q_value - expected_q_value.data).pow(2).mean()
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        return loss.item()
     
+    def train(self, pre_fr=0):
+        # Stats
+        loss_history = list()
+        loss = 0
+        states_history = list()
+        rewards_history = list()
+        episode_rewards = [0]
+        episode_reward = 0
+        episode_num = 0
 
-    def train(self):
-        change_params_interval = 128
-        optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
+        # Debug
+        self.argmax_cnt = 0
+        self.random_cnt = 0
 
-        reward_list = list()
+        # Start plot
+        plt.ion()
+        plt.show()
+        plt.pause(0.001)
 
-        s = self.env.reset()
+        # Reset environment
+        print("Preparing environment...")
+        state = self.env.reset()
+        states_history.append(state.tolist())
 
-        for step in range(10000):
-            # print("\n-- Step", step)
+        # Start training
+        print("Started training...")
+        start = time.time()
+        for step in range(self.n_steps):
 
-            a = self.sample_action(torch.from_numpy(s).float())
+            # Choose action
+            action = self.choose_action(state)
 
-            s_prime, r, done, info = self.env.step(a)
+            # Apply action
+            next_state, reward, done, _ = self.env.step(action)
 
-            # print("State\t", str(s).replace("\n", "").replace(" ", ""))
-            # print("Action\t", a)
-            # print("Reward\t", r)
-            # print("S_prime\t", str(s_prime).replace("\n", "").replace(" ", ""))
-            reward_list.append(r)
+            # Add to replay memory
+            self.memory.add(state, action, reward, next_state, done)
 
-            done_mask = 0.0 if done else 1.0
-            self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
+            # Update state
+            state = next_state
 
-            s = s_prime
-            
-            # Perform one step of the optimization (on the target network)
-            self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
+            # Stats
+            episode_reward += reward
+            rewards_history.append(reward)
+            states_history.append(next_state.tolist())
 
-            # print("contaloca", step+1%change_params_interval)
-            if (step+1) % change_params_interval == 0:
-                self.q_target.load_state_dict(self.q.state_dict())
-            
-                avg_reward = sum(reward_list[-change_params_interval:])/change_params_interval
-                print("\nStep:{}, Avg. reward: {:.2f}, Memory size: {}, Epsilon: {:.2f}%".format(
-                    step, avg_reward, self.replay_memory.size(), self.epsilon))
+            # Learn
+            if len(self.memory) > self.batch_size:
+                loss = self.learn_batch()
+                loss_history.append(loss)
 
-                print("State\t", str(s).replace("\n", "").replace(" ", ""))
-            
-                with open('data/data{}.txt'.format(self.flag), 'a+') as f:
-                    f.write(str(step) + '\t' + str(self.epsilon) + '\t' + str(avg_reward) + '\n')
+            # if step == 2: break
+
+            # Save interval
+            if (step != 0 and step % self.target_update_interval == 0):
+                # Update step time
+                end = time.time()
+                elapsed = end - start
+                start = time.time()
+
+                # Print stats
+                if episode_reward > max(episode_rewards): last = '!'
+                elif episode_reward >= episode_rewards[-1]: last = '+' 
+                else: last = '-'
+                print("episode: %2d \t acc_reward: %10.3f  %s \t loss: %8.3f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, last, loss, float(elapsed), self.epsilon))
                 
-                with open('data/reward_list{}.json'.format(self.flag), 'w+') as f:
-                    json.dump(reward_list, f, indent=4)
+                # Save logs
+                log = "%2d\t%8.3f\t%s\t%8.3f\t%.2f\t%.4f\n" % (episode_num, episode_reward, last, loss, elapsed, self.epsilon)
+                with open(self.output_path+'log.txt', 'a+') as f:
+                    f.write(log)
+                with open(self.output_path+'rewards_history.json', 'w+') as f:
+                    json.dump(rewards_history, f)
+                with open(self.output_path+'states_history.json', 'w+') as f:
+                    json.dump(states_history, f)
 
-                self.epsilon = self.epsilon * 0.95
+                # Stats
+                episode_rewards.append(episode_reward)
+                episode_reward = 0
+                episode_num += 1
 
-        self.env.close()
-    
-    def train_eps(self):
-        change_params_interval = 128
-        optimizer = optim.Adam(self.q.parameters(), lr=self.learning_rate)
+                # Plot
+                plt.plot(episode_rewards[-(len(episode_rewards)-1):])
+                plt.draw()
+                plt.pause(0.001)
 
-        reward_list = list()
+                # Epsilon decay
+                self.epsilon -= self.epsilon * self.epsilon_decay
+                if self.epsilon < self.epsilon_min: self.epsilon = self.epsilon_min
 
-        for episode in range(80):
-            s = self.env.reset()
+                # Update target weights
+                self.qnet_target.load_state_dict(self.qnet.state_dict())
 
-            for step in range(128):
-                # print("\n-- Step", step)
+                # Save model checkpoint
+                self.save_model()
 
-                a = self.sample_action(torch.from_numpy(s).float())
+                # self.env.reset()
+                self.env.debug()
+                print('ARGMAX', self.argmax_cnt)
+                print('RANDOM', self.random_cnt)
+                print('')
+                self.argmax_cnt = 0
+                self.random_cnt = 0
 
-                s_prime, r, done, info = self.env.step(a)
+            # if done:
+            #     # Update step time
+            #     end = time.time()
+            #     elapsed = end - start
+            #     start = time.time()
 
-                # print("State\t", str(s).replace("\n", "").replace(" ", ""))
-                # print("Action\t", a)
-                # print("Reward\t", r)
-                # print("S_prime\t", str(s_prime).replace("\n", "").replace(" ", ""))
-                reward_list.append(r)
-
-                done_mask = 0.0 if done else 1.0
-                self.replay_memory.put((s,a,r/100.0,s_prime, done_mask))
-
-                s = s_prime
+            #     # Print stats
+            #     if episode_reward > max(episode_rewards): last = '!'
+            #     elif episode_reward >= episode_rewards[-1]: last = '+' 
+            #     else: last = '-'
+            #     print("episode: %2d \t acc_reward: %10.3f  %s \t loss: %8.3f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, last, loss, float(elapsed), self.epsilon))
                 
-                # Perform one step of the optimization (on the target network)
-                self.optimize_model(self.q, self.q_target, self.replay_memory, optimizer)
+            #     # Save logs
+            #     log = "%2d\t%8.3f\t%s\t%8.3f\t%.2f\t%.4f\n" % (episode_num, episode_reward, last, loss, elapsed, self.epsilon)
+            #     with open(self.output_path+'log.txt', 'a+') as f:
+            #         f.write(log)
+            #     with open(self.output_path+'rewards_history.json', 'w+') as f:
+            #         json.dump(rewards_history, f)
+            #     with open(self.output_path+'states_history.json', 'w+') as f:
+            #         json.dump(states_history, f)
 
-            ### FINISHED EPISODE
-            self.q_target.load_state_dict(self.q.state_dict())
-        
-            avg_reward = sum(reward_list[-change_params_interval:])/change_params_interval
-            print("\nEps:{}, Avg. reward: {:.2f}, Memory size: {}, Epsilon: {:.2f}%".format(
-                episode, avg_reward, self.replay_memory.size(), self.epsilon))
+            #     # Stats
+            #     episode_rewards.append(episode_reward)
+            #     episode_reward = 0
+            #     episode_num += 1
 
-            print("State\t", str(s).replace("\n", "").replace(" ", ""))
-        
-            with open('data/data{}.txt'.format(self.flag), 'a+') as f:
-                f.write(str(step) + '\t' + str(self.epsilon) + '\t' + str(avg_reward) + '\n')
-            
-            with open('data/reward_list{}.json'.format(self.flag), 'w+') as f:
-                json.dump(reward_list, f, indent=4)
+            #     # Plot
+            #     plt.plot(episode_rewards[-(len(episode_rewards)-1):])
+            #     plt.draw()
+            #     plt.pause(0.001)
 
-            self.epsilon = self.epsilon * 0.95
+            #     self.env.reset()
 
+        # Close and finish
         self.env.close()
 
 
 if __name__ == "__main__":
-    agent = DQNAgent(env=Environment(), flag='_without_columns')
+    import os
+    os.system('sudo systemctl restart postgresql@12-main')
+
+    agent = Agent(env=Environment(), output_path='without_columns')
     agent.train()
-
-    agent = DQNAgent(env=Environment(allow_columns=True), flag='_with_columns')
-    agent.train()
-
-    # agent = DQNAgent(env=Environment(), flag='_without_columns_with_eps')
-    # agent.train_eps()
-
-    # agent = DQNAgent(env=Environment(allow_columns=True), flag='_with_columns_with_eps')
-    # agent.train_eps()
