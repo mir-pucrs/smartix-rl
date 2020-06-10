@@ -59,7 +59,7 @@ class PG_Database():
         constraints = [row[0] for row in output]
 
         # Fetch all tables and columns
-        command = "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='public';"
+        command = "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='public' AND is_updatable='YES';"
         output = self.execute_fetchall(command, verbose=False)
         tables = dict()
         for row in output:
@@ -177,18 +177,18 @@ if __name__ == "__main__":
     #################################################
 
 
-    db = PGDatabase()
+    db = PG_Database()
 
     # Get workload
     with open('workload/tpch.sql', 'r') as f:
         data = f.read()
     workload = data.split('\n')
 
-    # db.create_index('lineitem', 'l_shipdate', verbose=False)
-    # db.create_index('part', 'p_size', verbose=False)
-    # db.create_index('part', 'p_container', verbose=False)
-    # db.create_index('part', 'p_brand', verbose=False)
-    # db.create_index('orders', 'o_orderdate', verbose=False)
+    db.create_index('lineitem', 'l_shipdate', verbose=False)
+    db.create_index('part', 'p_size', verbose=False)
+    db.create_index('part', 'p_container', verbose=False)
+    db.create_index('part', 'p_brand', verbose=False)
+    db.create_index('orders', 'o_orderdate', verbose=False)
     db.create_index('customer', 'c_acctbal', verbose=False)
 
     # Count uses
