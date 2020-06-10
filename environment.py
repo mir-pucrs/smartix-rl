@@ -4,9 +4,9 @@ import time
 import random
 
 class Environment():
-    def __init__(self, workload_path='data/workload/tpch.sql', allow_columns=True, window_size = 20):
+    def __init__(self, workload_path='data/workload/tpch.sql', hypo=True, allow_columns=False, flip=False, window_size = 40):
         # Database instance
-        self.db = PG_Database()
+        self.db = PG_Database(hypo=hypo)
 
         # Workload
         self.workload = self.load_workload(workload_path)
@@ -22,12 +22,29 @@ class Environment():
 
         # Environment
         self.allow_columns = allow_columns
+        self.flip = flip
         if self.allow_columns:
             self.n_features = len(self.column_order) * 2
-            self.n_actions = len(self.column_order)
+            self.n_actions = len(self.column_order) * 2
         else:
             self.n_features = len(self.column_order)
-            self.n_actions = len(self.column_order)
+            self.n_actions = len(self.column_order) * 2
+        if self.flip:
+            self.n_actions = len(self.column_order) ################# + 1
+
+        
+        # DEBUG
+        self.trues = 0
+        self.falses = 0
+        self.counter_create_true = 0
+        self.counter_create_false = 0
+        self.counter_drop_true = 0
+        self.counter_drop_false = 0
+        self.cnt_drop_bom = 0
+        self.cnt_drop_ruim = 0
+        self.cnt_create_bom = 0
+        self.cnt_create_ruim = 0
+        self.cnt_no_op = 0
 
     """
         Acessed from outside
@@ -36,6 +53,11 @@ class Environment():
         - close()
     """
     def step(self, action):
+        # NO OP
+        if self.flip and action == 8: ##################### action == len(self.column_order) or 
+            self.cnt_no_op += 1
+            return self.get_state(), -5, False, dict()
+        
         # Apply action
         s_prime, reward = self.apply_transition(action)
 
@@ -58,6 +80,41 @@ class Environment():
         close = self.db.close_connection()
         return close
 
+    def debug(self):
+        indexes_dict = self.db.get_indexes()
+        if indexes_dict['c_acctbal'] == 1: print('c_acctbal')
+        if indexes_dict['p_brand'] == 1: print('p_brand')
+        if indexes_dict['p_container'] == 1: print('p_container')
+        if indexes_dict['p_size'] == 1: print('p_size')
+        if indexes_dict['l_shipdate'] == 1: print('l_shipdate')
+        print(sum(indexes_dict.values()))
+        
+        if self.flip:
+            print('CREATE BOM  ', self.cnt_create_bom)
+            print('CREATE RUIM ', self.cnt_create_ruim)
+            print('DROP   BOM  ', self.cnt_drop_bom)
+            print('DROP   RUIM ', self.cnt_drop_ruim)
+            print('NO OP', self.cnt_no_op)
+        else:
+            print('Trues  ', self.trues)
+            print('Falses ', self.falses)
+            print('CRT T', self.counter_create_true)
+            print('CRT F', self.counter_create_false)
+            print('DRP T', self.counter_drop_true)
+            print('DRP F', self.counter_drop_false)
+        
+        self.counter_create_true = 0
+        self.counter_create_false = 0
+        self.counter_drop_true = 0
+        self.counter_drop_false = 0
+        self.cnt_drop_bom = 0
+        self.cnt_drop_ruim = 0
+        self.cnt_create_bom = 0
+        self.cnt_create_ruim = 0
+        self.cnt_no_op = 0
+        self.trues = 0
+        self.falses = 0
+
     """
         Reward functions
         - compute_reward_index_scan(query)
@@ -65,30 +122,47 @@ class Environment():
         - compute_reward_avg_cost_window(query)
     """
 
-    def compute_reward_index_scan(self, drop, table, column):
-        # Check whether the index could be used in the last len(window) queries
+    def compute_reward_index_scan(self, changed, drop, table, column):
+        # If action was a drop, create hypothetical
+        if drop and changed: self.db.create_index(table, column, verbose=False)
+
+        # Check amount of queries the index could be used in the last len(window)
         total_count = 0
-        if drop: self.db.create_index(table, column, verbose=False)
         for q in self.workload_buffer:
             count = self.db.get_query_use(q, column)
             total_count += count
-        if drop: self.db.drop_index(table, column, verbose=False)
 
-        reward = total_count * 50
-        if drop and total_count > 0:
-            reward = reward * -1
-            # print("DROP", column, total_count, reward)
-        elif drop:
-            reward = -1
-            # print("DROP", column, total_count, reward)
-        elif not drop and total_count == 0:
-            reward = -50
-            # print("CREATE", column, total_count, reward)
-        else:
-            reward = reward * 2
-            # print("CREATE", column, total_count, reward)
+        # Drop hypothetical in case it was a drop
+        if drop and changed: self.db.drop_index(table, column, verbose=False)
 
-        # print("")
+        if changed and drop:
+            if total_count == 0: # DROPA == 0 - BOM
+                self.cnt_drop_bom += 1
+                reward = 5
+            else: # DROPA > 0 - RUIM
+                self.cnt_drop_ruim += 1
+                reward = -20
+        if changed and not drop:
+            if total_count == 0: # CRIA == 0 - RUIM
+                self.cnt_create_ruim += 1
+                reward = -15
+            else: # CRIA > 0 - BOM
+                self.cnt_create_bom += 1
+                reward = 10
+
+        # if not changed and drop: # DROPA JA DROPADO
+        #     print('AQUI NAO')
+        #     if total_count == 0:
+        #         reward = -1
+        #     else:
+        #         reward = -10
+        # if not changed and not drop: # CRIA JA CRIADO
+        #     print('AQUI NAO')
+        #     if total_count == 0:
+        #         reward = -10
+        #     else:
+        #         reward = -1
+        
         return reward
 
     def compute_reward_sum_cost_all(self):
@@ -117,23 +191,17 @@ class Environment():
 
     def apply_transition(self, action):
         # Apply index change
-        changed, drop, table, column = self.apply_index_change(action)
+        if self.flip:
+            changed, drop, table, column = self.apply_index_change_flip(action)
+        else:
+            changed, drop, table, column = self.apply_index_change(action)
 
         # Execute next_query
         next_query, elapsed_time = self.step_workload()
         # next_query, elapsed_time = self.random_step_workload()
 
         # Compute reward
-        if changed:
-            # reward = self.compute_reward_sum_cost_all()
-            # reward = self.compute_reward_avg_cost_window(next_query)
-            reward = self.compute_reward_index_scan(drop, table, column)
-        elif drop:
-            reward = -1
-        else:
-            reward = -500
-            # print("NONE!", column, reward)
-            # print("")
+        reward = self.compute_reward_index_scan(changed, drop, table, column)
 
         # Get next state
         s_prime = self.get_state()
@@ -151,29 +219,70 @@ class Environment():
                 # Get the table
                 for table in self.db.tables.keys():
                     if column in self.db.tables[table]:
+                        counter = False
+                        if column == 'c_acctbal': counter = True
+                        if column == 'p_brand': counter = True
+                        if column == 'p_container': counter = True
+                        if column == 'p_size': counter = True
+                        if column == 'l_shipdate': counter = True
                         if drop:
                             if indexes[column] == 0: 
                                 # print("FALSE - DRP", column)
+                                self.falses += 1
+                                if counter: self.counter_drop_false += 1
                                 return False, drop, table, column
                             else:
                                 # print("TRUE  - DRP", column)
+                                self.trues += 1
+                                if counter: self.counter_drop_true += 1
                                 self.db.drop_index(table, column, verbose=False)
                                 return True, drop, table, column
                         else:
                             if indexes[column] == 1:
                                 # print("FALSE - CRT", column)
+                                self.falses += 1
+                                if counter: self.counter_create_false += 1
                                 return False, drop, table, column
                             else: 
                                 # print("TRUE  - CRT", column)
+                                self.trues += 1
+                                if counter: self.counter_create_true += 1
                                 self.db.create_index(table, column, verbose=False)
                                 return True, drop, table, column
+
+    def apply_index_change_flip(self, action):
+        indexes = self.db.get_indexes()
+        for idx, column in enumerate(indexes):
+            if idx == action:
+                # Get the table
+                for table in self.db.tables.keys():
+                    if column in self.db.tables[table]:
+                        if indexes[column] == 1:
+                            drop = True
+                            cnt = 0
+                            while self.db.get_indexes()[column] != 0:
+                                self.db.drop_index(table, column, verbose=False)
+                                if cnt != 0: print('WHILE', cnt, idx, action, table, column)
+                                cnt += 1
+                            if cnt != 1: print('SAIU WHILE')
+                            return True, drop, table, column
+                        else:
+                            drop = False
+                            cnt = 0
+                            while self.db.get_indexes()[column] != 1:
+                                self.db.create_index(table, column, verbose=False)
+                                if cnt != 0: print('WHILE', cnt, idx, action, table, column)
+                                cnt += 1
+                            if cnt != 1: print('SAIU WHILE')
+                            return True, drop, table, column
 
     def step_workload(self):
         query = self.workload[self.workload_iterator]
 
         # Execute query
         start = time.time()
-        # self.db.execute(query, verbose=False)
+        # print(self.workload_iterator)
+        # self.db.execute(query, verbose=True)
         end = time.time()
         elapsed_time = end - start
         
@@ -253,7 +362,9 @@ class Environment():
         self.column_count = list()
         cost_history = list()
 
-        sample_queries = random.sample(self.workload, window_size)
+        sample_queries = list()
+        while len(sample_queries) < window_size:
+            sample_queries.append(random.sample(self.workload, 1)[0])
         for query in sample_queries:
             workload_buffer.append(query)
             cost_history.append(self.db.get_query_cost(query))
@@ -280,6 +391,10 @@ class Environment():
 
 if __name__ == "__main__":
     from pprint import pprint
-    env = Environment()
-
-    pprint(env.column_order)
+    # env = Environment(hypo=False)
+    # env.reset()
+    # env.close()
+    env = Environment(hypo=True)
+    env.reset()
+    while True:
+        env.step(7)
