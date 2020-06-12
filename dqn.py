@@ -63,6 +63,8 @@ class Agent:
         # Hyperparameters
         self.gamma = 0.9
         self.alpha = 1e-4
+        self.beta = 0.01
+        self.avg_reward = 0
 
         # Training
         self.n_steps = 100000  # 100k
@@ -74,7 +76,7 @@ class Agent:
         # Epsilon
         self.epsilon = 1  # 100%
         self.epsilon_min = 0.01  # 1%
-        self.epsilon_decay = 0.1  # 10%
+        self.epsilon_decay = 0.05  # 10%
 
         # Environment
         self.env = env
@@ -114,24 +116,29 @@ class Agent:
         return action
 
     def learn_batch(self):
-        s0, a, r, s1, done = self.memory.sample(self.batch_size)
+        losses = 0
+        for _ in range(3):
+            s0, a, r, s1, done = self.memory.sample(self.batch_size)
 
-        # Normal DDQN update
-        q_values = self.qnet(s0)
-        q_value = q_values.gather(1, a.unsqueeze(1)).squeeze(1)
-        # Double Q-learning
-        online_next_q_values = self.qnet(s1)
-        _, max_indicies = torch.max(online_next_q_values, dim=1)
-        target_q_values = self.qnet_target(s1)
-        next_q_value = torch.gather(target_q_values, 1, max_indicies.unsqueeze(1))
-        expected_q_value = r + self.gamma * next_q_value.squeeze() * (1 - done)
+            # Normal DDQN update
+            q_values = self.qnet(s0)
+            q_value = q_values.gather(1, a.unsqueeze(1)).squeeze(1)
+            # Double Q-learning
+            online_next_q_values = self.qnet(s1)
+            _, max_indicies = torch.max(online_next_q_values, dim=1)
+            target_q_values = self.qnet_target(s1)
+            next_q_value = torch.gather(target_q_values, 1, max_indicies.unsqueeze(1))
 
-        loss = (q_value - expected_q_value.data).pow(2).mean()
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+            expected_q_value = r + self.gamma * next_q_value.squeeze()
+            # expected_q_value = r - self.avg_reward + next_q_value.squeeze()
 
-        return loss.item()
+            loss = (q_value - expected_q_value.data).pow(2).mean()
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
+            losses += loss.item()
+        return losses
     
     def train(self, pre_fr=0):
         # Stats
@@ -142,6 +149,7 @@ class Agent:
         episode_rewards = [0]
         episode_reward = 0
         episode_num = 0
+        rewards = list()
 
         # Debug
         self.argmax_cnt = 0
@@ -168,6 +176,12 @@ class Agent:
             # Apply action
             next_state, reward, done, _ = self.env.step(action)
 
+            # Update average reward
+            # q_target = np.max(self.qnet_target(torch.tensor(np.concatenate(np.expand_dims(next_state, 0)), dtype=torch.float)).detach().numpy())
+            # q_value = self.qnet(torch.tensor(np.concatenate(np.expand_dims(state, 0)), dtype=torch.float)).detach().numpy()[action]
+            # delta = reward - self.avg_reward + (q_target - q_value)
+            # self.avg_reward += self.beta*delta
+
             # Add to replay memory
             self.memory.add(state, action, reward, next_state, done)
 
@@ -183,8 +197,6 @@ class Agent:
             if len(self.memory) > self.batch_size:
                 loss = self.learn_batch()
                 loss_history.append(loss)
-
-            # if step == 2: break
 
             # Save interval
             if (step != 0 and step % self.target_update_interval == 0):
@@ -236,38 +248,7 @@ class Agent:
                 self.argmax_cnt = 0
                 self.random_cnt = 0
 
-            # if done:
-            #     # Update step time
-            #     end = time.time()
-            #     elapsed = end - start
-            #     start = time.time()
-
-            #     # Print stats
-            #     if episode_reward > max(episode_rewards): last = '!'
-            #     elif episode_reward >= episode_rewards[-1]: last = '+' 
-            #     else: last = '-'
-            #     print("episode: %2d \t acc_reward: %10.3f  %s \t loss: %8.3f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, last, loss, float(elapsed), self.epsilon))
-                
-            #     # Save logs
-            #     log = "%2d\t%8.3f\t%s\t%8.3f\t%.2f\t%.4f\n" % (episode_num, episode_reward, last, loss, elapsed, self.epsilon)
-            #     with open(self.output_path+'log.txt', 'a+') as f:
-            #         f.write(log)
-            #     with open(self.output_path+'rewards_history.json', 'w+') as f:
-            #         json.dump(rewards_history, f)
-            #     with open(self.output_path+'states_history.json', 'w+') as f:
-            #         json.dump(states_history, f)
-
-            #     # Stats
-            #     episode_rewards.append(episode_reward)
-            #     episode_reward = 0
-            #     episode_num += 1
-
-            #     # Plot
-            #     plt.plot(episode_rewards[-(len(episode_rewards)-1):])
-            #     plt.draw()
-            #     plt.pause(0.001)
-
-            #     self.env.reset()
+                # self.env.reset()
 
         # Close and finish
         self.env.close()
@@ -275,7 +256,8 @@ class Agent:
 
 if __name__ == "__main__":
     import os
+    print("Restarting PostgreSQL...")
     os.system('sudo systemctl restart postgresql@12-main')
 
-    agent = Agent(env=Environment(), output_path='without_columns')
+    agent = Agent(env=Environment(allow_columns=True, flip=False), output_path='with_columns')
     agent.train()
