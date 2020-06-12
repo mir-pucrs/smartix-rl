@@ -30,7 +30,7 @@ class PG_Database():
     def get_query_cost(self, query):
         # Get cost
         command = "EXPLAIN (FORMAT JSON) {}".format(query)
-        output = self.execute_fetchall(command, verbose=False)
+        output = self.execute_fetchall(command)
         explain = output[0][0][0]
         cost = float(explain['Plan']['Total Cost'])
         return cost
@@ -38,7 +38,7 @@ class PG_Database():
     def get_query_use(self, query, column):
         # Get explain plan
         command = "EXPLAIN {}".format(query)
-        output = self.execute_fetchall(command, verbose=False)
+        output = self.execute_fetchall(command)
         # Start counting
         count = 0
         for row in output:
@@ -55,12 +55,12 @@ class PG_Database():
     def get_tables(self):
         # Fetch constraints
         command = "SELECT kcu.column_name FROM information_schema.table_constraints tco JOIN information_schema.key_column_usage kcu ON kcu.constraint_name = tco.constraint_name AND kcu.constraint_schema = tco.constraint_schema AND kcu.constraint_name = tco.constraint_name WHERE tco.constraint_type = 'PRIMARY KEY' OR tco.constraint_type = 'FOREIGN KEY' ORDER BY kcu.table_name;"
-        output = self.execute_fetchall(command, verbose=False)
+        output = self.execute_fetchall(command)
         constraints = [row[0] for row in output]
 
         # Fetch all tables and columns
         command = "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema='public' AND is_updatable='YES';"
-        output = self.execute_fetchall(command, verbose=False)
+        output = self.execute_fetchall(command)
         tables = dict()
         for row in output:
             table, column = row
@@ -75,7 +75,7 @@ class PG_Database():
     def get_indexes(self):
         if self.hypo:
             command = "SELECT * FROM hypopg_list_indexes();"
-            output = self.execute_fetchall(command, verbose=False)
+            output = self.execute_fetchall(command)
             index_names = list(set([row[1] for row in output]))
             indexes = dict()
             for table in self.tables.keys():
@@ -87,7 +87,7 @@ class PG_Database():
             return indexes
         else:
             command = "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_indexes ixs, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey) AND ixs.schemaname = 'public' AND i.relname = ixs.indexname ORDER BY t.relname, i.relname;"
-            output = self.execute_fetchall(command, verbose=False)
+            output = self.execute_fetchall(command)
             index_names = list(set([row[1] for row in output]))
             indexes = dict()
             for table in self.tables.keys():
@@ -98,11 +98,11 @@ class PG_Database():
                         indexes[column] = 0
             return indexes
 
-    def drop_index(self, table, column, verbose=True):
+    def drop_index(self, table, column, verbose=False):
         if self.hypo:
             # Get all indexes
             command = "SELECT * FROM hypopg_list_indexes();"
-            indexes = self.execute_fetchall(command, verbose=False)
+            indexes = self.execute_fetchall(command)
             # Iterate indexes and check column match
             for index in indexes:
                 if table == index[3] and column in index[1]:
@@ -115,7 +115,7 @@ class PG_Database():
                 command = ("DROP INDEX smartix_%s;" % (column))
             self.execute(command, verbose)
 
-    def create_index(self, table, column, verbose=True):
+    def create_index(self, table, column, verbose=False):
         if self.hypo:
             command = "SELECT * FROM hypopg_create_index('CREATE INDEX smartix_%s ON %s (%s)');" % (column, table, column)
             self.execute(command, verbose)
@@ -125,15 +125,15 @@ class PG_Database():
         if self.analyze:
             for table in self.tables.keys():
                 command = "ANALYZE {};".format(table)
-                self.execute(command, verbose=False)
+                self.execute(command)
 
     def reset_indexes(self):
         if self.hypo:
             command = "SELECT * FROM hypopg_reset();"
-            self.execute(command, verbose=False)
+            self.execute(command)
         else:
             command = "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_indexes ixs, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey) AND ixs.schemaname = 'public' AND i.relname = ixs.indexname ORDER BY t.relname, i.relname;"
-            output = self.execute_fetchall(command, verbose=False)
+            output = self.execute_fetchall(command)
             for index in output:
                 index_name = index[1]
                 if "smartix_" in index_name:
@@ -148,7 +148,7 @@ class PG_Database():
             print('ERROR: {}'.format(err))
             return False
 
-    def execute(self, command, verbose=True):
+    def execute(self, command, verbose=False):
         try:
             cur = self.conn.cursor()
             cur.execute(command)
@@ -157,7 +157,7 @@ class PG_Database():
         except psycopg2.DatabaseError as err:
             print('ERROR: {}'.format(err))
     
-    def execute_fetchall(self, command, verbose=True):
+    def execute_fetchall(self, command, verbose=False):
         try:
             cur = self.conn.cursor()
             cur.execute(command)
@@ -184,12 +184,12 @@ if __name__ == "__main__":
         data = f.read()
     workload = data.split('\n')
 
-    db.create_index('lineitem', 'l_shipdate', verbose=False)
-    db.create_index('part', 'p_size', verbose=False)
-    db.create_index('part', 'p_container', verbose=False)
-    db.create_index('part', 'p_brand', verbose=False)
-    db.create_index('orders', 'o_orderdate', verbose=False)
-    db.create_index('customer', 'c_acctbal', verbose=False)
+    db.create_index('lineitem', 'l_shipdate')
+    db.create_index('part', 'p_size')
+    db.create_index('part', 'p_container')
+    db.create_index('part', 'p_brand')
+    db.create_index('orders', 'o_orderdate')
+    db.create_index('customer', 'c_acctbal')
 
     # Count uses
     total_count = 0
@@ -228,7 +228,7 @@ if __name__ == "__main__":
     #     # First
     #     first_cost = 0
     #     for q in workload:
-    #         out = db.execute_fetchall("EXPLAIN "+q, verbose=False)
+    #         out = db.execute_fetchall("EXPLAIN "+q)
     #         cost = db.get_query_cost(q)
     #         first_cost += cost
     #     print("First cost:", first_cost)
@@ -236,12 +236,12 @@ if __name__ == "__main__":
     #     # Create
     #     for table in db.tables:
     #         for column in db.tables[table]:
-    #             db.create_index(table, column, verbose=False)
+    #             db.create_index(table, column)
 
     #     # Second
     #     second_cost = 0
     #     for q in workload:
-    #         out = db.execute_fetchall("EXPLAIN "+q, verbose=False)
+    #         out = db.execute_fetchall("EXPLAIN "+q)
     #         cost = db.get_query_cost(q)
     #         second_cost += cost
     #     print("Second cost:", second_cost)
