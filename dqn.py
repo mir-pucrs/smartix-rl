@@ -55,15 +55,10 @@ class QNet(nn.Module):
 
 
 class Agent:
-    def __init__(self, env=Environment(), output_path=str(time.time())):
-        # Log
-        path = os.path.join('output', output_path)
-        if not os.path.isdir(path): os.makedirs(path)
-        self.output_path = path + '/'
-
+    def __init__(self, env=Environment(), output_path=None):
         # Hyperparameters
         self.gamma = 0.9
-        self.alpha = 0.0005
+        self.alpha = 0.0001
         # self.beta = 0.01
         # self.avg_reward = 0
 
@@ -73,6 +68,15 @@ class Agent:
         self.memory = ReplayMemory(self.memory_size)
         self.target_update_interval = 128
         self.batch_size = 1024
+
+        # Log
+        if output_path == None:
+            path = os.path.join('output', '{}_{}_{}_{}_{}_{}'.format(
+                str(time.time()), self.alpha, self.n_steps, self.memory_size, self.target_update_interval, self.batch_size))
+        else:
+            path = os.path.join('output', output_path)
+        if not os.path.isdir(path): os.makedirs(path)
+        self.output_path = path + '/'
 
         # Epsilon
         self.epsilon = 1  # 100%
@@ -268,7 +272,7 @@ if __name__ == "__main__":
     print("Restarting PostgreSQL...")
     os.system('sudo systemctl restart postgresql@12-main')
     
-    agent = Agent(env=Environment(), output_path='ep_batch_lr0.0005')
+    agent = Agent(env=Environment())
     agent.train()
 
     # env1 = Environment(allow_columns=False, flip=False, reward_function=1)
