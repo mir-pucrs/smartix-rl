@@ -59,8 +59,8 @@ class Agent:
         # Hyperparameters
         self.gamma = 0.9
         self.alpha = 0.0001
-        # self.beta = 0.01
-        # self.avg_reward = 0
+        self.beta = 0.01
+        self.avg_reward = 0
 
         # Training
         self.n_steps = 50000  # 100k
@@ -138,11 +138,29 @@ class Agent:
         s1 = torch.tensor(s1, dtype=torch.float)
         a = torch.tensor(a, dtype=torch.long)
         r = torch.tensor(r, dtype=torch.float)
-        done = torch.tensor(done, dtype=torch.float)
 
         q_values = self.qnet(s0).gather(1,a)
         max_q_values = self.qnet_target(s1).max(1)[0].unsqueeze(1)
         q_targets = r + self.gamma * max_q_values
+
+        loss = (q_values - q_targets).pow(2).mean()
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
+    
+    def learn_step(self, state, action, reward, next_state):
+        s0 = torch.tensor(np.expand_dims(state, 0), dtype=torch.float)
+        s1 = torch.tensor(np.expand_dims(next_state, 0), dtype=torch.float)
+        a = torch.tensor([[action]], dtype=torch.long)
+        r = torch.tensor([[reward]], dtype=torch.float)
+
+        q_values = self.qnet(s0).gather(1,a)
+        max_q_values = self.qnet_target(s1).max(1)[0].unsqueeze(1)
+        q_targets = (r - sum(self.avg_reward[-self.n:])) + max_q_values
+        delta = q_values - q_targets
+        self.avg_reward.append(self.beta*(delta.detach().numpy()[0]))
 
         loss = (q_values - q_targets).pow(2).mean()
 
@@ -157,23 +175,28 @@ class Agent:
         actions_history = list()
         states_history = list()
         rewards_history = list()
-
+        
         loss = 0
         episode_rewards = [0]
         episode_reward = 0
         episode_num = 0
 
+        self.deltas = list()
+        self.n = 256
+        self.avg_reward = np.zeros(self.n).tolist()
+        accum_loss = 0
+
         # Start plot
-        plt.ion()
-        plt.show()
-        plt.pause(0.001)
+        # plt.ion()
+        # plt.show()
+        # plt.pause(0.001)
 
         # Reset environment
         print("Preparing environment...")
         state = self.env.reset()
         states_history.append(state.tolist())
 
-        self.episode_batch = list()
+        # self.episode_batch = list()
 
         # Start training
         print("Started training...")
@@ -185,16 +208,11 @@ class Agent:
 
             # Apply action
             next_state, reward, done, _ = self.env.step(action)
-            
-            # Update average reward
-            # q_target = np.max(self.qnet_target(torch.tensor(np.concatenate(np.expand_dims(next_state, 0)), dtype=torch.float)).detach().numpy())
-            # q_value = self.qnet(torch.tensor(np.concatenate(np.expand_dims(state, 0)), dtype=torch.float)).detach().numpy()[action]
-            # delta = reward - self.avg_reward + (q_target - q_value)
-            # self.avg_reward += self.beta*delta
 
             # Add to replay memory
-            self.memory.add(state, action, reward, next_state, done)
-            self.episode_batch.append((state, [action], [reward], next_state, [done]))
+            # self.memory.add(state, action, reward, next_state, done)
+            # self.episode_batch.append((state, [action], [reward], next_state, [done]))
+            accum_loss += self.learn_step(state, action, reward, next_state)
 
             # Update state
             state = next_state
@@ -206,15 +224,15 @@ class Agent:
             states_history.append(next_state.tolist())
 
             # Learn
-            if len(self.memory) > self.batch_size:
-                loss = self.learn_batch()
-                loss_history.append(loss)
+            # if len(self.memory) > self.batch_size:
+            #     loss = self.learn_batch()
+            #     loss_history.append(loss)
 
             # Save interval
             if (step != 0 and step % self.target_update_interval == 0):
                 # Learn episode batch
-                ep_loss = self.learn_episode(self.episode_batch)
-                self.episode_batch = list()
+                # ep_loss = self.learn_episode(self.episode_batch)
+                # self.episode_batch = list()
 
                 # Update step time
                 end = time.time()
@@ -222,13 +240,18 @@ class Agent:
                 start = time.time()
 
                 str_state = str(state.tolist()).replace(", ", "").replace("[", ""). replace("]", "")
-                print('\n', str_state[:45], str_state[45:])
+                print('')
+                print(str_state[:45], str_state[45:])
 
                 # Print stats
-                print("episode: %2d \t acc_reward: %10.3f \t loss: %8.8f \t ep_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, loss, ep_loss, float(elapsed), self.epsilon))
-                
+                # print("episode: %2d \t acc_reward: %10.3f \t loss: %8.8f \t ep_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, loss, ep_loss, float(elapsed), self.epsilon))
+                print("episode: %2d \t acc_reward: %10.3f \t accum_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, accum_loss, float(elapsed), self.epsilon))
+
                 # Save logs
-                log = "%2d\t%8.3f\t%8.8f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, loss, ep_loss, elapsed, self.epsilon)
+                # log = "%2d\t%8.3f\t%8.8f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, loss, ep_loss, elapsed, self.epsilon)
+                log = "%2d\t%8.3f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, accum_loss, elapsed, self.epsilon)
+                accum_loss = 0
+
                 with open(self.output_path+'log.txt', 'a+') as f:
                     f.write(log)
                 with open(self.output_path+'rewards_history.json', 'w+') as f:
@@ -250,7 +273,8 @@ class Agent:
                 # plt.pause(0.001)
 
                 # Epsilon decay
-                if len(self.memory) > self.batch_size: self.epsilon -= self.epsilon * self.epsilon_decay
+                # if len(self.memory) > self.batch_size: self.epsilon -= self.epsilon * self.epsilon_decay
+                self.epsilon -= self.epsilon * self.epsilon_decay
                 if self.epsilon < self.epsilon_min: self.epsilon = self.epsilon_min
 
                 # Update target weights
