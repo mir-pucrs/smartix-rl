@@ -6,6 +6,7 @@ import os
 import collections
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import torch
 import torch.nn as nn
@@ -24,12 +25,12 @@ class ReplayMemory():
         return len(self.memory)
 
     def add(self, s0, a, r, s1, done):
-        self.memory.append((np.expand_dims(s0, 0), a, r, np.expand_dims(s1, 0), done))
+        self.memory.append((s0, [a], [r], s1, [done]))
 
     def sample(self, batch_size):
         s0, a, r, s1, done = zip(*random.sample(self.memory, batch_size))
-        s0 = torch.tensor(np.concatenate(s0), dtype=torch.float)
-        s1 = torch.tensor(np.concatenate(s1), dtype=torch.float)
+        s0 = torch.tensor(s0, dtype=torch.float)
+        s1 = torch.tensor(s1, dtype=torch.float)
         a = torch.tensor(a, dtype=torch.long)
         r = torch.tensor(r, dtype=torch.float)
         done = torch.tensor(done, dtype=torch.float)
@@ -62,21 +63,21 @@ class Agent:
 
         # Hyperparameters
         self.gamma = 0.9
-        self.alpha = 1e-4
-        self.beta = 0.01
-        self.avg_reward = 0
+        self.alpha = 0.001
+        # self.beta = 0.01
+        # self.avg_reward = 0
 
         # Training
-        self.n_steps = 100000  # 100k
+        self.n_steps = 50000  # 100k
         self.memory_size = 10000  # 10k
         self.memory = ReplayMemory(self.memory_size)
         self.target_update_interval = 128
-        self.batch_size = 256
+        self.batch_size = 1024
 
         # Epsilon
         self.epsilon = 1  # 100%
         self.epsilon_min = 0.01  # 1%
-        self.epsilon_decay = 0.05  # 10%
+        self.epsilon_decay = 0.03  # 1%
 
         # Environment
         self.env = env
@@ -109,51 +110,35 @@ class Agent:
             state = torch.tensor(state, dtype=torch.float).unsqueeze(0)
             q_value = self.qnet.forward(state)
             action = q_value.max(1)[1].item()
-            self.argmax_cnt += 1
         else:
             action = random.randrange(self.n_actions)
-            self.random_cnt += 1
         return action
 
     def learn_batch(self):
-        losses = 0
-        for _ in range(3):
-            s0, a, r, s1, done = self.memory.sample(self.batch_size)
+        s0, a, r, s1, done = self.memory.sample(self.batch_size)
 
-            # Normal DDQN update
-            q_values = self.qnet(s0)
-            q_value = q_values.gather(1, a.unsqueeze(1)).squeeze(1)
-            # Double Q-learning
-            online_next_q_values = self.qnet(s1)
-            _, max_indicies = torch.max(online_next_q_values, dim=1)
-            target_q_values = self.qnet_target(s1)
-            next_q_value = torch.gather(target_q_values, 1, max_indicies.unsqueeze(1))
+        q_values = self.qnet(s0).gather(1,a)
+        max_q_values = self.qnet_target(s1).max(1)[0].unsqueeze(1)
+        q_targets = r + self.gamma * max_q_values
 
-            expected_q_value = r + self.gamma * next_q_value.squeeze()
-            # expected_q_value = r - self.avg_reward + next_q_value.squeeze()
+        loss = (q_values - q_targets).pow(2).mean()
 
-            loss = (q_value - expected_q_value.data).pow(2).mean()
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-
-            losses += loss.item()
-        return losses
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
     
-    def train(self, pre_fr=0):
+    def train(self):
         # Stats
         loss_history = list()
-        loss = 0
+        actions_history = list()
         states_history = list()
         rewards_history = list()
+
+        loss = 0
         episode_rewards = [0]
         episode_reward = 0
         episode_num = 0
-        rewards = list()
-
-        # Debug
-        self.argmax_cnt = 0
-        self.random_cnt = 0
 
         # Start plot
         plt.ion()
@@ -175,7 +160,7 @@ class Agent:
 
             # Apply action
             next_state, reward, done, _ = self.env.step(action)
-
+            
             # Update average reward
             # q_target = np.max(self.qnet_target(torch.tensor(np.concatenate(np.expand_dims(next_state, 0)), dtype=torch.float)).detach().numpy())
             # q_value = self.qnet(torch.tensor(np.concatenate(np.expand_dims(state, 0)), dtype=torch.float)).detach().numpy()[action]
@@ -190,6 +175,7 @@ class Agent:
 
             # Stats
             episode_reward += reward
+            actions_history.append(action)
             rewards_history.append(reward)
             states_history.append(next_state.tolist())
 
@@ -205,11 +191,14 @@ class Agent:
                 elapsed = end - start
                 start = time.time()
 
+                str_state = str(state.tolist()).replace(", ", "").replace("[", ""). replace("]", "")
+                print(str_state[:45], str_state[45:])
+
                 # Print stats
                 if episode_reward > max(episode_rewards): last = '!'
                 elif episode_reward >= episode_rewards[-1]: last = '+' 
                 else: last = '-'
-                print("episode: %2d \t acc_reward: %10.3f  %s \t loss: %8.3f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, last, loss, float(elapsed), self.epsilon))
+                print("episode: %2d \t acc_reward: %10.3f  %s \t loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, last, loss, float(elapsed), self.epsilon))
                 
                 # Save logs
                 log = "%2d\t%8.3f\t%s\t%8.3f\t%.2f\t%.4f\n" % (episode_num, episode_reward, last, loss, elapsed, self.epsilon)
@@ -219,6 +208,8 @@ class Agent:
                     json.dump(rewards_history, f)
                 with open(self.output_path+'states_history.json', 'w+') as f:
                     json.dump(states_history, f)
+                with open(self.output_path+'actions_history.json', 'w+') as f:
+                    json.dump(actions_history, f)
 
                 # Stats
                 episode_rewards.append(episode_reward)
@@ -226,12 +217,13 @@ class Agent:
                 episode_num += 1
 
                 # Plot
-                plt.plot(episode_rewards[-(len(episode_rewards)-1):])
-                plt.draw()
-                plt.pause(0.001)
+                # plt.plot(rewards_history[(episode_num-1)*128:])
+                # plt.plot(loss_history[(episode_num-1)*128:])
+                # plt.draw()
+                # plt.pause(0.001)
 
                 # Epsilon decay
-                self.epsilon -= self.epsilon * self.epsilon_decay
+                if len(self.memory) > self.batch_size: self.epsilon -= self.epsilon * self.epsilon_decay
                 if self.epsilon < self.epsilon_min: self.epsilon = self.epsilon_min
 
                 # Update target weights
@@ -239,14 +231,8 @@ class Agent:
 
                 # Save model checkpoint
                 self.save_model()
-
-                # self.env.reset()
+                
                 self.env.debug()
-                print('ARGMAX', self.argmax_cnt)
-                print('RANDOM', self.random_cnt)
-                print('')
-                self.argmax_cnt = 0
-                self.random_cnt = 0
 
                 # self.env.reset()
 
@@ -258,6 +244,90 @@ if __name__ == "__main__":
     import os
     print("Restarting PostgreSQL...")
     os.system('sudo systemctl restart postgresql@12-main')
-
-    agent = Agent(env=Environment(allow_columns=True, flip=False), output_path='with_columns')
+    
+    agent = Agent(env=Environment(allow_columns=True, flip=True))
     agent.train()
+
+    # env1 = Environment(allow_columns=False, flip=False, reward_function=1)
+    # env2 = Environment(allow_columns=False, flip=False, reward_function=2)
+    # env3 = Environment(allow_columns=False, flip=False, reward_function=3)
+    # env4 = Environment(allow_columns=False, flip=False, reward_function=4)
+    # env5 = Environment(allow_columns=False, flip=False, reward_function=5)
+
+    # env6 = Environment(allow_columns=True, flip=False, reward_function=1)
+    # env7 = Environment(allow_columns=True, flip=False, reward_function=2)
+    # env8 = Environment(allow_columns=True, flip=False, reward_function=3)
+    # env9 = Environment(allow_columns=True, flip=False, reward_function=4)
+    # env10 = Environment(allow_columns=True, flip=False, reward_function=5)
+
+    # env11 = Environment(allow_columns=False, flip=True, reward_function=1)
+    # env12 = Environment(allow_columns=False, flip=True, reward_function=2)
+    # env13 = Environment(allow_columns=False, flip=True, reward_function=3)
+    # env14 = Environment(allow_columns=False, flip=True, reward_function=4)
+    # env15 = Environment(allow_columns=False, flip=True, reward_function=5)
+
+    # env16 = Environment(allow_columns=True, flip=True, reward_function=1)
+    # env17 = Environment(allow_columns=True, flip=True, reward_function=2)
+    # env18 = Environment(allow_columns=True, flip=True, reward_function=3)
+    # env19 = Environment(allow_columns=True, flip=True, reward_function=4)
+    # env20 = Environment(allow_columns=True, flip=True, reward_function=5)
+
+    # agent = Agent(env=env1, output_path='env1')
+    # agent.train()
+
+    # agent = Agent(env=env2, output_path='env2')
+    # agent.train()
+
+    # agent = Agent(env=env3, output_path='env3')
+    # agent.train()
+
+    # agent = Agent(env=env4, output_path='env4')
+    # agent.train()
+
+    # agent = Agent(env=env5, output_path='env5')
+    # agent.train()
+
+    # agent = Agent(env=env6, output_path='env6')
+    # agent.train()
+
+    # agent = Agent(env=env7, output_path='env7')
+    # agent.train()
+
+    # agent = Agent(env=env8, output_path='env8')
+    # agent.train()
+
+    # agent = Agent(env=env9, output_path='env9')
+    # agent.train()
+
+    # agent = Agent(env=env10, output_path='env10')
+    # agent.train()
+
+    # agent = Agent(env=env11, output_path='env11')
+    # agent.train()
+
+    # agent = Agent(env=env12, output_path='env12')
+    # agent.train()
+
+    # agent = Agent(env=env13, output_path='env13')
+    # agent.train()
+
+    # agent = Agent(env=env14, output_path='env14')
+    # agent.train()
+
+    # agent = Agent(env=env15, output_path='env15')
+    # agent.train()
+
+    # agent = Agent(env=env16, output_path='env16')
+    # agent.train()
+
+    # agent = Agent(env=env17, output_path='env17')
+    # agent.train()
+
+    # agent = Agent(env=env18, output_path='env18')
+    # agent.train()
+
+    # agent = Agent(env=env19, output_path='env19')
+    # agent.train()
+
+    # agent = Agent(env=env20, output_path='env20')
+    # agent.train()
