@@ -39,18 +39,13 @@ class PG_Database():
         # Get explain plan
         command = "EXPLAIN {}".format(query)
         output = self.execute_fetchall(command)
-        # Start counting
-        count = 0
+        # Verify
         for row in output:
             if 'pkey' in row[0]: continue
             if 'fkey' in row[0]: continue
-            if 'Index Scan using' in row[0] and column in row[0]:
-                count = 1
-                return count
-            elif 'Index Scan on' in row[0] and column in row[0]:
-                count = 1
-                return count
-        return count
+            if 'Index Scan on' in row[0] and column in row[0]: return 1
+            elif 'Index Scan using' in row[0] and column in row[0]: return 1
+        return 0
 
     def get_tables(self):
         # Fetch constraints
@@ -180,7 +175,7 @@ if __name__ == "__main__":
     db = PG_Database()
 
     # Get workload
-    with open('workload/tpch.sql', 'r') as f:
+    with open('data/workload/tpch.sql', 'r') as f:
         data = f.read()
     workload = data.split('\n')
 
@@ -192,82 +187,12 @@ if __name__ == "__main__":
     db.create_index('customer', 'c_acctbal')
 
     # Count uses
-    total_count = 0
-    for i, q in enumerate(workload):
-        count = db.get_query_use(q, 'c_acctbal')
-        print(i, count)
-        total_count += count
-    print("Total count:", total_count)
+    for col in ['l_shipdate', 'p_size', 'p_container', 'p_brand', 'o_orderdate', 'c_acctbal']:
+        total_count = 0
+        for i, q in enumerate(workload):
+            count = db.get_query_use(q, col)
+            # print(i, count)
+            total_count += count
+        print("Total count:", total_count)
 
     db.close_connection()
-
-
-    #################################################
-
-
-    # history_analyze = list()
-    # history_normal = list()
-
-    # for i in range(50):
-    #     # Create DB
-    #     if i % 2 == 0:
-    #         print("")
-    #         print(i, "Normal")
-    #         db = PGDatabase()
-    #     else:
-    #         print("")
-    #         print(i, "Analyze")
-    #         db = PGDatabase(analyze=True)
-    #     db.reset_indexes()
-
-    #     # Get workload
-    #     with open('workload/tpch.sql', 'r') as f:
-    #         data = f.read()
-    #     workload = data.split('\n')
-
-    #     # First
-    #     first_cost = 0
-    #     for q in workload:
-    #         out = db.execute_fetchall("EXPLAIN "+q)
-    #         cost = db.get_query_cost(q)
-    #         first_cost += cost
-    #     print("First cost:", first_cost)
-        
-    #     # Create
-    #     for table in db.tables:
-    #         for column in db.tables[table]:
-    #             db.create_index(table, column)
-
-    #     # Second
-    #     second_cost = 0
-    #     for q in workload:
-    #         out = db.execute_fetchall("EXPLAIN "+q)
-    #         cost = db.get_query_cost(q)
-    #         second_cost += cost
-    #     print("Second cost:", second_cost)
-
-    #     # Difference
-    #     diff = first_cost - second_cost
-    #     print("Difference", diff)
-    #     if i % 2 == 0: history_normal.append(diff)
-    #     else: history_analyze.append(diff)
-
-    #     # Close DB
-    #     db.close_connection()
-
-    # # Save results
-    # with open('normal.json', 'w+') as f:
-    #     json.dump(history_normal, f, indent=4)
-    # with open('analyze.json', 'w+') as f:
-    #     json.dump(history_analyze, f, indent=4)
-
-    # # Load results
-    # with open('normal.json', 'r') as f:
-    #     normal = json.load(f)
-    # with open('analyze.json', 'r') as f:
-    #     analyze = json.load(f)
-
-    # # Plot
-    # plt.plot(normal)
-    # plt.plot(analyze)
-    # plt.show()
