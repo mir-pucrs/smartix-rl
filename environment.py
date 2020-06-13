@@ -50,17 +50,11 @@ class Environment():
     
     def reset(self):
         # Workload and indexes
-        self.db.reset_indexes()
-        # for table in self.tables:
-            # for column in self.table_columns[table]:
-                # self.db.create_index(table, column)
-        
+        self.db.reset_indexes()        
         self.workload_iterator = 0
 
         # Window-related
         self.workload_buffer, self.usage_history = self.initialize_window(self.window_size)
-
-        print(str(self.get_state().tolist()).replace(", ", "").replace("[", ""). replace("]", ""))
 
         return self.get_state()
     
@@ -184,8 +178,6 @@ class Environment():
 
         if column in self.optimal_indexes:
             print(drop, '\t', column, '\t', use)
-        # else:
-            # print(use, column)
 
         if drop:
             if use == 0:
