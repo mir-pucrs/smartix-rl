@@ -63,7 +63,7 @@ class Agent:
 
         # Hyperparameters
         self.gamma = 0.9
-        self.alpha = 0.001
+        self.alpha = 0.0005
         # self.beta = 0.01
         # self.avg_reward = 0
 
@@ -128,6 +128,25 @@ class Agent:
         self.optimizer.step()
         return loss.item()
     
+    def learn_episode(self, episode_batch):
+        s0, a, r, s1, done = zip(*episode_batch)
+        s0 = torch.tensor(s0, dtype=torch.float)
+        s1 = torch.tensor(s1, dtype=torch.float)
+        a = torch.tensor(a, dtype=torch.long)
+        r = torch.tensor(r, dtype=torch.float)
+        done = torch.tensor(done, dtype=torch.float)
+
+        q_values = self.qnet(s0).gather(1,a)
+        max_q_values = self.qnet_target(s1).max(1)[0].unsqueeze(1)
+        q_targets = r + self.gamma * max_q_values
+
+        loss = (q_values - q_targets).pow(2).mean()
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
+
     def train(self):
         # Stats
         loss_history = list()
@@ -150,6 +169,8 @@ class Agent:
         state = self.env.reset()
         states_history.append(state.tolist())
 
+        self.episode_batch = list()
+
         # Start training
         print("Started training...")
         start = time.time()
@@ -169,6 +190,7 @@ class Agent:
 
             # Add to replay memory
             self.memory.add(state, action, reward, next_state, done)
+            self.episode_batch.append((state, [action], [reward], next_state, [done]))
 
             # Update state
             state = next_state
@@ -186,22 +208,23 @@ class Agent:
 
             # Save interval
             if (step != 0 and step % self.target_update_interval == 0):
+                # Learn episode batch
+                ep_loss = self.learn_episode(self.episode_batch)
+                self.episode_batch = list()
+
                 # Update step time
                 end = time.time()
                 elapsed = end - start
                 start = time.time()
 
                 str_state = str(state.tolist()).replace(", ", "").replace("[", ""). replace("]", "")
-                print(str_state[:45], str_state[45:])
+                print('\n', str_state[:45], str_state[45:])
 
                 # Print stats
-                if episode_reward > max(episode_rewards): last = '!'
-                elif episode_reward >= episode_rewards[-1]: last = '+' 
-                else: last = '-'
-                print("episode: %2d \t acc_reward: %10.3f  %s \t loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, last, loss, float(elapsed), self.epsilon))
+                print("episode: %2d \t acc_reward: %10.3f \t loss: %8.8f \t ep_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, loss, ep_loss, float(elapsed), self.epsilon))
                 
                 # Save logs
-                log = "%2d\t%8.3f\t%s\t%8.3f\t%.2f\t%.4f\n" % (episode_num, episode_reward, last, loss, elapsed, self.epsilon)
+                log = "%2d\t%8.3f\t%8.8f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, loss, ep_loss, elapsed, self.epsilon)
                 with open(self.output_path+'log.txt', 'a+') as f:
                     f.write(log)
                 with open(self.output_path+'rewards_history.json', 'w+') as f:
@@ -245,7 +268,7 @@ if __name__ == "__main__":
     print("Restarting PostgreSQL...")
     os.system('sudo systemctl restart postgresql@12-main')
     
-    agent = Agent(env=Environment(allow_columns=True, flip=True))
+    agent = Agent(env=Environment(), output_path='ep_batch_lr0.0005')
     agent.train()
 
     # env1 = Environment(allow_columns=False, flip=False, reward_function=1)
