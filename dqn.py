@@ -1,12 +1,10 @@
 import random
-import math
 import time
 import json
 import os
 import collections
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 import torch
 import torch.nn as nn
@@ -15,7 +13,6 @@ import torch.nn.functional as F
 from environment import Environment
 import gym
 
-from pprint import pprint
 
 class ReplayMemory():
     def __init__(self, capacity):
@@ -59,11 +56,9 @@ class Agent:
         # Hyperparameters
         self.gamma = 0.9
         self.alpha = 0.0001
-        self.beta = 0.01
-        self.avg_reward = 0
 
         # Training
-        self.n_steps = 50000  # 100k
+        self.n_steps = 100000  # 100k
         self.memory_size = 10000  # 10k
         self.memory = ReplayMemory(self.memory_size)
         self.target_update_interval = 128
@@ -149,42 +144,17 @@ class Agent:
         loss.backward()
         self.optimizer.step()
         return loss.item()
-    
-    def learn_step(self, state, action, reward, next_state):
-        s0 = torch.tensor(np.expand_dims(state, 0), dtype=torch.float)
-        s1 = torch.tensor(np.expand_dims(next_state, 0), dtype=torch.float)
-        a = torch.tensor([[action]], dtype=torch.long)
-        r = torch.tensor([[reward]], dtype=torch.float)
-
-        q_values = self.qnet(s0).gather(1,a)
-        max_q_values = self.qnet_target(s1).max(1)[0].unsqueeze(1)
-        q_targets = (r - sum(self.avg_reward[-self.n:])) + max_q_values
-        delta = q_values - q_targets
-        self.avg_reward.append(self.beta*(delta.detach().numpy()[0]))
-
-        loss = (q_values - q_targets).pow(2).mean()
-
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-        return loss.item()
 
     def train(self):
         # Stats
-        loss_history = list()
-        actions_history = list()
         states_history = list()
+        actions_history = list()
         rewards_history = list()
-        
-        loss = 0
-        episode_rewards = [0]
+        episode_rewards = list()
+        episode_batch = list()
+        batch_loss = 0
         episode_reward = 0
         episode_num = 0
-
-        self.deltas = list()
-        self.n = 256
-        self.avg_reward = np.zeros(self.n).tolist()
-        accum_loss = 0
 
         # Start plot
         # plt.ion()
@@ -195,8 +165,6 @@ class Agent:
         print("Preparing environment...")
         state = self.env.reset()
         states_history.append(state.tolist())
-
-        # self.episode_batch = list()
 
         # Start training
         print("Started training...")
@@ -210,9 +178,8 @@ class Agent:
             next_state, reward, done, _ = self.env.step(action)
 
             # Add to replay memory
-            # self.memory.add(state, action, reward, next_state, done)
-            # self.episode_batch.append((state, [action], [reward], next_state, [done]))
-            accum_loss += self.learn_step(state, action, reward, next_state)
+            self.memory.add(state, action, reward, next_state, done)
+            episode_batch.append((state, [action], [reward], next_state, [done]))
 
             # Update state
             state = next_state
@@ -224,57 +191,48 @@ class Agent:
             states_history.append(next_state.tolist())
 
             # Learn
-            # if len(self.memory) > self.batch_size:
-            #     loss = self.learn_batch()
-            #     loss_history.append(loss)
+            if len(self.memory) > self.batch_size:
+                batch_loss += self.learn_batch()
 
             # Save interval
             if (step != 0 and step % self.target_update_interval == 0):
                 # Learn episode batch
-                # ep_loss = self.learn_episode(self.episode_batch)
-                # self.episode_batch = list()
+                ep_loss = self.learn_episode(episode_batch)
 
                 # Update step time
                 end = time.time()
                 elapsed = end - start
                 start = time.time()
 
-                str_state = str(state.tolist()).replace(", ", "").replace("[", ""). replace("]", "")
-                print('')
-                print(str_state[:45], str_state[45:])
-
                 # Print stats
-                # print("episode: %2d \t acc_reward: %10.3f \t loss: %8.8f \t ep_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, loss, ep_loss, float(elapsed), self.epsilon))
-                print("episode: %2d \t acc_reward: %10.3f \t accum_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, accum_loss, float(elapsed), self.epsilon))
-
+                print("episode: %2d \t acc_reward: %10.3f \t batch_loss: %8.8f \t ep_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, batch_loss, ep_loss, float(elapsed), self.epsilon))
+                
                 # Save logs
-                # log = "%2d\t%8.3f\t%8.8f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, loss, ep_loss, elapsed, self.epsilon)
-                log = "%2d\t%8.3f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, accum_loss, elapsed, self.epsilon)
-                accum_loss = 0
+                log = "%2d\t%8.3f\t%8.8f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, batch_loss, ep_loss, elapsed, self.epsilon)
 
                 with open(self.output_path+'log.txt', 'a+') as f:
                     f.write(log)
-                with open(self.output_path+'rewards_history.json', 'w+') as f:
-                    json.dump(rewards_history, f)
                 with open(self.output_path+'states_history.json', 'w+') as f:
                     json.dump(states_history, f)
                 with open(self.output_path+'actions_history.json', 'w+') as f:
                     json.dump(actions_history, f)
+                 with open(self.output_path+'rewards_history.json', 'w+') as f:
+                    json.dump(rewards_history, f)
 
                 # Stats
+                episode_batch = list()
                 episode_rewards.append(episode_reward)
                 episode_reward = 0
                 episode_num += 1
+                batch_loss = 0
 
                 # Plot
-                # plt.plot(rewards_history[(episode_num-1)*128:])
-                # plt.plot(loss_history[(episode_num-1)*128:])
+                # plt.plot(episode_rewards)
                 # plt.draw()
                 # plt.pause(0.001)
 
                 # Epsilon decay
-                # if len(self.memory) > self.batch_size: self.epsilon -= self.epsilon * self.epsilon_decay
-                self.epsilon -= self.epsilon * self.epsilon_decay
+                if len(self.memory) > self.batch_size: self.epsilon -= self.epsilon * self.epsilon_decay
                 if self.epsilon < self.epsilon_min: self.epsilon = self.epsilon_min
 
                 # Update target weights
@@ -284,8 +242,6 @@ class Agent:
                 self.save_model()
                 
                 self.env.debug()
-
-                # self.env.reset()
 
         # Close and finish
         self.env.close()
@@ -298,87 +254,3 @@ if __name__ == "__main__":
     
     agent = Agent(env=Environment())
     agent.train()
-
-    # env1 = Environment(allow_columns=False, flip=False, reward_function=1)
-    # env2 = Environment(allow_columns=False, flip=False, reward_function=2)
-    # env3 = Environment(allow_columns=False, flip=False, reward_function=3)
-    # env4 = Environment(allow_columns=False, flip=False, reward_function=4)
-    # env5 = Environment(allow_columns=False, flip=False, reward_function=5)
-
-    # env6 = Environment(allow_columns=True, flip=False, reward_function=1)
-    # env7 = Environment(allow_columns=True, flip=False, reward_function=2)
-    # env8 = Environment(allow_columns=True, flip=False, reward_function=3)
-    # env9 = Environment(allow_columns=True, flip=False, reward_function=4)
-    # env10 = Environment(allow_columns=True, flip=False, reward_function=5)
-
-    # env11 = Environment(allow_columns=False, flip=True, reward_function=1)
-    # env12 = Environment(allow_columns=False, flip=True, reward_function=2)
-    # env13 = Environment(allow_columns=False, flip=True, reward_function=3)
-    # env14 = Environment(allow_columns=False, flip=True, reward_function=4)
-    # env15 = Environment(allow_columns=False, flip=True, reward_function=5)
-
-    # env16 = Environment(allow_columns=True, flip=True, reward_function=1)
-    # env17 = Environment(allow_columns=True, flip=True, reward_function=2)
-    # env18 = Environment(allow_columns=True, flip=True, reward_function=3)
-    # env19 = Environment(allow_columns=True, flip=True, reward_function=4)
-    # env20 = Environment(allow_columns=True, flip=True, reward_function=5)
-
-    # agent = Agent(env=env1, output_path='env1')
-    # agent.train()
-
-    # agent = Agent(env=env2, output_path='env2')
-    # agent.train()
-
-    # agent = Agent(env=env3, output_path='env3')
-    # agent.train()
-
-    # agent = Agent(env=env4, output_path='env4')
-    # agent.train()
-
-    # agent = Agent(env=env5, output_path='env5')
-    # agent.train()
-
-    # agent = Agent(env=env6, output_path='env6')
-    # agent.train()
-
-    # agent = Agent(env=env7, output_path='env7')
-    # agent.train()
-
-    # agent = Agent(env=env8, output_path='env8')
-    # agent.train()
-
-    # agent = Agent(env=env9, output_path='env9')
-    # agent.train()
-
-    # agent = Agent(env=env10, output_path='env10')
-    # agent.train()
-
-    # agent = Agent(env=env11, output_path='env11')
-    # agent.train()
-
-    # agent = Agent(env=env12, output_path='env12')
-    # agent.train()
-
-    # agent = Agent(env=env13, output_path='env13')
-    # agent.train()
-
-    # agent = Agent(env=env14, output_path='env14')
-    # agent.train()
-
-    # agent = Agent(env=env15, output_path='env15')
-    # agent.train()
-
-    # agent = Agent(env=env16, output_path='env16')
-    # agent.train()
-
-    # agent = Agent(env=env17, output_path='env17')
-    # agent.train()
-
-    # agent = Agent(env=env18, output_path='env18')
-    # agent.train()
-
-    # agent = Agent(env=env19, output_path='env19')
-    # agent.train()
-
-    # agent = Agent(env=env20, output_path='env20')
-    # agent.train()
