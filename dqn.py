@@ -54,15 +54,15 @@ class QNet(nn.Module):
 class Agent:
     def __init__(self, env=Environment(), output_path=None):
         # Hyperparameters
-        self.gamma = 0.9
-        self.alpha = 0.0001
+        self.gamma = 1.0  # 0.9
+        self.alpha = 0.00001  # 0.0001
 
         # Training
         self.n_steps = 100000  # 100k
-        self.memory_size = 10000  # 10k
+        self.memory_size = 25000  # 10k
         self.memory = ReplayMemory(self.memory_size)
-        self.target_update_interval = 128
-        self.batch_size = 1024
+        self.target_update_interval = 128  # 128
+        self.batch_size = 2048  # 1024
 
         # Log
         if output_path == None:
@@ -216,7 +216,7 @@ class Agent:
                     json.dump(states_history, f)
                 with open(self.output_path+'actions_history.json', 'w+') as f:
                     json.dump(actions_history, f)
-                 with open(self.output_path+'rewards_history.json', 'w+') as f:
+                with open(self.output_path+'rewards_history.json', 'w+') as f:
                     json.dump(rewards_history, f)
 
                 # Stats

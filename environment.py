@@ -4,7 +4,7 @@ import time
 import random
 
 class Environment():
-    def __init__(self, workload_path='data/workload/tpch.sql', hypo=True, allow_columns=True, flip=True, no_op=True, window_size = 80):
+    def __init__(self, workload_path='data/workload/tpch_shift.sql', shift=True, hypo=True, allow_columns=True, flip=True, no_op=True, window_size=80):
         # DBMS
         self.db = PG_Database(hypo=hypo)
 
@@ -17,6 +17,17 @@ class Environment():
         self.workload = self.load_workload(workload_path)
         self.workload_iterator = 0
         self.window_size = window_size
+
+        # Set current workload
+        self.shift = shift
+        if self.shift:
+            self.shift_interval = 20
+            self.shift_count = 0
+            self.shift_point = int(len(self.workload)/2)
+            self.current_workload = self.workload[:self.shift_point]
+            self.first_shift = True
+        else:
+            self.current_workload = self.workload
 
         # Environment
         self.allow_columns = allow_columns
@@ -52,6 +63,16 @@ class Environment():
         # Workload and indexes
         self.db.reset_indexes()        
         self.workload_iterator = 0
+
+        # Set current workload
+        if self.shift:
+            self.shift_interval = 20
+            self.shift_count = 0
+            self.shift_point = int(len(self.workload)/2)
+            self.current_workload = self.workload[:self.shift_point]
+            self.first_shift = True
+        else:
+            self.current_workload = self.workload
 
         # Window-related
         self.workload_buffer, self.usage_history = self.initialize_window(self.window_size)
@@ -209,47 +230,28 @@ class Environment():
     def apply_transition(self, action):
         # Check if NO OP
         if self.no_op and action == self.n_actions - 1:
-            state = self.get_state()
+            # Execute next_query
+            query = self.step_workload()
+            
+            # Update usage history
+            self.usage_history.append(np.zeros(len(self.columns)).tolist())
+
+            # No reward
             reward = 0
-            # print('NOOP')
-            return state, reward
-
-        # Apply index change
-        if self.flip:
-            changed, drop, table, column = self.apply_index_change_flip(action)
         else:
-            changed, drop, table, column = self.apply_index_change(action)
+            # Apply index change
+            if self.flip: changed, drop, table, column = self.apply_index_change_flip(action)
+            else: changed, drop, table, column = self.apply_index_change(action)
 
-        # Execute next_query
-        query = self.step_workload()
+            # Execute next_query
+            query = self.step_workload()
 
-        # Update usage history
-        self.usage_history.append(self.get_usage_count(column))
+            # Update usage history
+            self.usage_history.append(self.get_usage_count(column))
 
-        # Compute reward
-        # if self.reward_function == 1:
-        #     # print(1)
-        #     reward = self.compute_reward_weight_columns(changed, drop, table, column)
-        # elif self.reward_function == 2:
-        #     # print(2)
-        #     reward = self.compute_reward_weight_indexes(changed, drop, table, column)
-        # elif self.reward_function == 3:
-        #     # print(3)
-        #     reward = self.compute_reward_index_scan(changed, drop, table, column)
-        # elif self.reward_function == 4:
-        #     # print(4)
-        #     reward = self.compute_reward_avg_cost_window()
-        # elif self.reward_function == 5:
-        #     # print(5)
-        #     reward = self.compute_reward_cost(query)
-        # elif self.reward_function == 6:
-        #     # print(6)
-        #     reward = self.compute_reward_cost_difference(column)
-        # elif self.reward_function == 7:
-        #     # print(7)
-        #     reward = self.compute_reward_query_use(changed, drop, column)
-        reward = self.compute_reward_query_use(changed, drop, column)
-
+            # Compute reward
+            reward = self.compute_reward_query_use(changed, drop, column)
+        
         # Get next state
         s_prime = self.get_state()
 
@@ -316,7 +318,7 @@ class Environment():
         return True, drop, table, column
 
     def step_workload(self):
-        query = self.workload[self.workload_iterator]
+        query = self.current_workload[self.workload_iterator]
 
         # Execute query
         # start = time.time()
@@ -333,8 +335,21 @@ class Environment():
 
         # Manage iterator
         self.workload_iterator += 1
-        if self.workload_iterator == len(self.workload):
+        if self.workload_iterator == len(self.current_workload):
             self.workload_iterator = 0
+
+            # If shifting
+            if self.shift:
+                self.shift_count += 1
+                if self.shift_count == self.shift_interval:
+                    print("------------------------ SHIFTING THE WORKLOAD ------------------------")
+                    self.shift_count = 0
+                    if self.first_shift:
+                        self.current_workload = self.workload[self.shift_point:]
+                        self.first_shift = False
+                    else:
+                        self.current_workload = self.workload[:self.shift_point]
+                        self.first_shift = True
         
         return query
     
@@ -495,8 +510,7 @@ if __name__ == "__main__":
                 total_use = env.db.get_query_use(q, col)
                 if total_use > 0: 
                     break
-            if total_use == 0: print('MEU DEUSSSSSSSSSSSS')
-            # print(total_use, col, len(buffer))
-        # print("")
+            print(total_use, col, len(buffer))
+        print("")
 
     env.close()

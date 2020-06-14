@@ -191,8 +191,8 @@ if __name__ == "__main__":
         total_count = 0
         for i, q in enumerate(workload):
             count = db.get_query_use(q, col)
-            # print(i, count)
+            print(col, i, count)
             total_count += count
-        print("Total count:", total_count)
+        print("Total count:", total_count, col)
 
     db.close_connection()
