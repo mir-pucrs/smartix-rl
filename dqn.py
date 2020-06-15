@@ -151,7 +151,6 @@ class Agent:
         actions_history = list()
         rewards_history = list()
         episode_rewards = list()
-        episode_batch = list()
         batch_loss = 0
         episode_reward = 0
         episode_num = 0
@@ -179,7 +178,6 @@ class Agent:
 
             # Add to replay memory
             self.memory.add(state, action, reward, next_state, done)
-            episode_batch.append((state, [action], [reward], next_state, [done]))
 
             # Update state
             state = next_state
@@ -196,8 +194,6 @@ class Agent:
 
             # Save interval
             if (step != 0 and step % self.target_update_interval == 0):
-                # Learn episode batch
-                ep_loss = self.learn_episode(episode_batch)
 
                 # Update step time
                 end = time.time()
@@ -205,10 +201,10 @@ class Agent:
                 start = time.time()
 
                 # Print stats
-                print("episode: %2d \t acc_reward: %10.3f \t batch_loss: %8.8f \t ep_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, batch_loss, ep_loss, float(elapsed), self.epsilon))
+                print("episode: %2d \t acc_reward: %10.3f \t batch_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, batch_loss, float(elapsed), self.epsilon))
                 
                 # Save logs
-                log = "%2d\t%8.3f\t%8.8f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, batch_loss, ep_loss, elapsed, self.epsilon)
+                log = "%2d\t%8.3f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, batch_loss, elapsed, self.epsilon)
 
                 with open(self.output_path+'log.txt', 'a+') as f:
                     f.write(log)
@@ -220,7 +216,6 @@ class Agent:
                     json.dump(rewards_history, f)
 
                 # Stats
-                episode_batch = list()
                 episode_rewards.append(episode_reward)
                 episode_reward = 0
                 episode_num += 1
