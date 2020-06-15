@@ -52,7 +52,7 @@ class QNet(nn.Module):
 
 
 class Agent:
-    def __init__(self, env=Environment(), output_path=None):
+    def __init__(self, env=Environment(), output_path=None, tag=None):
         # Hyperparameters
         self.gamma = 1.0  # 0.9
         self.alpha = 0.00001  # 0.0001
@@ -66,8 +66,8 @@ class Agent:
 
         # Log
         if output_path == None:
-            path = os.path.join('output', '{}_{}_{}_{}_{}_{}'.format(
-                str(time.time()), self.alpha, self.n_steps, self.memory_size, self.target_update_interval, self.batch_size))
+            path = os.path.join('output', '{}_{}_{}_{}_{}_{}_{}'.format(
+                str(time.time()), self.alpha, self.n_steps, self.memory_size, self.target_update_interval, self.batch_size, str(tag)))
         else:
             path = os.path.join('output', output_path)
         if not os.path.isdir(path): os.makedirs(path)
@@ -151,6 +151,7 @@ class Agent:
         actions_history = list()
         rewards_history = list()
         episode_rewards = list()
+        transitions_history = list()
         batch_loss = 0
         episode_reward = 0
         episode_num = 0
@@ -187,6 +188,7 @@ class Agent:
             actions_history.append(action)
             rewards_history.append(reward)
             states_history.append(next_state.tolist())
+            transitions_history.append((state.tolist(), [action], [reward], next_state.tolist(), [done]))
 
             # Learn
             if len(self.memory) > self.batch_size:
@@ -214,6 +216,8 @@ class Agent:
                     json.dump(actions_history, f)
                 with open(self.output_path+'rewards_history.json', 'w+') as f:
                     json.dump(rewards_history, f)
+                with open(self.output_path+'transitions_history.json', 'w+') as f:
+                    json.dump(transitions_history, f)
 
                 # Stats
                 episode_rewards.append(episode_reward)
@@ -247,5 +251,7 @@ if __name__ == "__main__":
     print("Restarting PostgreSQL...")
     os.system('sudo systemctl restart postgresql@12-main')
     
-    agent = Agent(env=Environment())
-    agent.train()
+    agent1 = Agent(env=Environment(window_size=40), tag='winsize40')
+    agent2 = Agent(env=Environment(window_size=80), tag='winsize80')
+    agent1.train()
+    agent2.train()
