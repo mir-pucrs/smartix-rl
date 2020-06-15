@@ -76,7 +76,7 @@ class Agent:
         # Epsilon
         self.epsilon = 1  # 100%
         self.epsilon_min = 0.01  # 1%
-        self.epsilon_decay = 0.03  # 1%
+        self.epsilon_decay = 0.01  # 1%
 
         # Environment
         self.env = env
