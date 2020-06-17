@@ -54,29 +54,39 @@ class QNet(nn.Module):
 class Agent:
     def __init__(self, env=Environment(), output_path=None, tag=None):
         # Hyperparameters
-        self.gamma = 1.0  # 0.9
-        self.alpha = 0.00001  # 0.0001
+        self.gamma = 0.9  # 0.9
+        self.alpha = 0.0001  # 0.0001
 
         # Training
         self.n_steps = 100000  # 100k
-        self.memory_size = 25000  # 10k
+        self.memory_size = 10000  # 10k
         self.memory = ReplayMemory(self.memory_size)
         self.target_update_interval = 128  # 128
-        self.batch_size = 2048  # 1024
-
-        # Log
-        if output_path == None:
-            path = os.path.join('output', '{}_{}_{}_{}_{}_{}_{}'.format(
-                str(time.time()), self.alpha, self.n_steps, self.memory_size, self.target_update_interval, self.batch_size, str(tag)))
-        else:
-            path = os.path.join('output', output_path)
-        if not os.path.isdir(path): os.makedirs(path)
-        self.output_path = path + '/'
+        self.batch_size = 1024  # 1024
 
         # Epsilon
         self.epsilon = 1  # 100%
         self.epsilon_min = 0.01  # 1%
         self.epsilon_decay = 0.01  # 1%
+
+        # Log
+        if output_path == None:
+            path = os.path.join('output', '{}_{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
+                str(time.time()), 
+                self.alpha, 
+                self.gamma, 
+                self.n_steps, 
+                self.memory_size, 
+                self.target_update_interval, 
+                self.batch_size, 
+                self.epsilon_min, 
+                self.epsilon_decay, 
+                str(tag))
+            )
+        else:
+            path = os.path.join('output', output_path)
+        if not os.path.isdir(path): os.makedirs(path)
+        self.output_path = path + '/'
 
         # Environment
         self.env = env
@@ -251,7 +261,7 @@ if __name__ == "__main__":
     print("Restarting PostgreSQL...")
     os.system('sudo systemctl restart postgresql@12-main')
     
-    agent1 = Agent(env=Environment(window_size=40), tag='winsize40')
-    agent2 = Agent(env=Environment(window_size=80), tag='winsize80')
+    agent1 = Agent(env=Environment(window_size=40, shift=False), tag='winsize40_noshift')
+    agent2 = Agent(env=Environment(window_size=80, shift=False), tag='winsize80_noshift')
     agent1.train()
     agent2.train()

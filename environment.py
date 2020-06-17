@@ -4,7 +4,7 @@ import time
 import random
 
 class Environment():
-    def __init__(self, workload_path='data/workload/tpch_shift.sql', shift=True, hypo=True, allow_columns=True, flip=True, no_op=True, window_size=40):
+    def __init__(self, workload_path='data/workload/tpch.sql', shift=False, hypo=True, allow_columns=True, flip=True, no_op=True, window_size=80):
         # DBMS
         self.db = PG_Database(hypo=hypo)
 
