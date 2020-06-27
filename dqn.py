@@ -66,8 +66,8 @@ class Agent:
 
         # Epsilon
         self.epsilon = 1  # 100%
-        self.epsilon_min = 0.01  # 1%
-        self.epsilon_decay = 0.01  # 1%
+        self.epsilon_min = 0.01  # 1% 0.01
+        self.epsilon_decay = 0.05  # 1% 0.01
 
         # Log
         if output_path == None:

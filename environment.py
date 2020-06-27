@@ -487,30 +487,36 @@ if __name__ == "__main__":
     env = Environment(hypo=True)
     env.reset()
 
-    buffer = list()
-    window = 22
-    iterator = 0
-    while True:
-        buffer.append(env.workload[iterator])
-        iterator += 1
-        if iterator == len(env.workload):
-            iterator = 0
-        if len(buffer) == window: break
-    print('Buffer', len(buffer))
+    # buffer = list()
+    # window = 22
+    # iterator = 0
+    # while True:
+    #     buffer.append(env.workload[iterator])
+    #     iterator += 1
+    #     if iterator == len(env.workload):
+    #         iterator = 0
+    #     if len(buffer) == window: break
+    # print('Buffer', len(buffer))
 
-    while True:
-        new_query = env.workload[iterator]
-        buffer.append(new_query)
-        buffer.pop(0)
-        iterator += 1
-        if iterator == len(env.workload): iterator = 0
-        for col in env.optimal_indexes:
-            total_use = 0
-            for q in buffer:
-                total_use = env.db.get_query_use(q, col)
-                if total_use > 0: 
-                    break
-            print(total_use, col, len(buffer))
-        print("")
+    # while True:
+    #     new_query = env.workload[iterator]
+    #     buffer.append(new_query)
+    #     buffer.pop(0)
+    #     iterator += 1
+    #     if iterator == len(env.workload): iterator = 0
+    #     for col in env.optimal_indexes:
+    #         total_use = 0
+    #         for q in buffer:
+    #             total_use = env.db.get_query_use(q, col)
+    #             if total_use > 0: 
+    #                 break
+    #         print(total_use, col, len(buffer))
+    #     print("")
 
-    env.close()
+    # env.close()
+
+    state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+
+    for idx, value in enumerate(state):
+        if value == 1:
+            print(env.columns[idx])
