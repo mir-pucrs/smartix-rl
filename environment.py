@@ -4,7 +4,7 @@ import time
 import random
 
 class Environment():
-    def __init__(self, workload_path='data/workload/tpch.sql', shift=False, hypo=True, allow_columns=True, flip=True, no_op=True, window_size=80):
+    def __init__(self, workload_path='data/workload/tpch.sql', shift=False, hypo=True, allow_columns=True, flip=True, no_op=True, window_size=80, reward_func=1):
         # DBMS
         self.db = PG_Database(hypo=hypo)
 
@@ -30,6 +30,7 @@ class Environment():
             self.current_workload = self.workload
 
         # Environment
+        self.reward_func = reward_func
         self.allow_columns = allow_columns
         self.flip = flip
         self.no_op = no_op
@@ -75,7 +76,7 @@ class Environment():
             self.current_workload = self.workload
 
         # Window-related
-        self.workload_buffer, self.usage_history = self.initialize_window(self.window_size)
+        self.workload_buffer, self.usage_history, self.cost_history, self.column_history = self.initialize_window(self.window_size)
 
         return self.get_state()
     
@@ -103,6 +104,53 @@ class Environment():
             compute_reward_cost
             compute_reward_cost_difference
     """
+    
+    # def compute_reward_weight_indexes(self, changed, drop, table, column):
+    #     if not changed: 
+    #         print('NOT CHANGED')
+    #         return -1
+
+    #     index_count = self.get_index_count_window()
+    #     count = index_count[self.columns.index(column)]
+
+    #     if count > 0: print(column, count)
+
+    #     reward = 10
+    #     if drop and count > 0:
+    #         reward = -(reward*count) * 4
+    #     if not drop and count > 0:
+    #         reward = (reward*count) * 2
+    #     if not drop and count == 0:
+    #         reward = -(reward*count) * 4
+
+    #     return reward
+
+    # def compute_reward_index_scan(self, changed, drop, table, column):
+    #     # If action was a drop, create hypothetical
+    #     if drop and changed: self.db.create_index(table, column)
+
+    #     # Check amount of queries the index could be used in the last len(window)
+    #     total_count = 0
+    #     for q in self.workload_buffer:
+    #         total_use =  self.db.get_query_use(q, column)
+    #         if total_use > 0: break
+
+    #     # Drop hypothetical in case it was a drop
+    #     if drop and changed: self.db.drop_index(table, column)
+
+    #     reward = 0
+    #     if changed and drop:
+    #         if total_count == 0: # DROPA == 0 - BOM
+    #             reward = 5
+    #         else: # DROPA > 0 - RUIM
+    #             reward = -20
+    #     if changed and not drop:
+    #         if total_count == 0: # CRIA == 0 - RUIM
+    #             reward = -15
+    #         else: # CRIA > 0 - BOM
+    #             reward = 10
+        
+    #     return reward
 
     def compute_reward_weight_columns(self, changed, drop, table, column):
         column_count = self.get_column_count_window()
@@ -119,53 +167,6 @@ class Environment():
         elif not drop and count > threshold:
             reward = count
 
-        return reward
-    
-    def compute_reward_weight_indexes(self, changed, drop, table, column):
-        if not changed: 
-            print('NOT CHANGED')
-            return -1
-
-        index_count = self.get_index_count_window()
-        count = index_count[self.columns.index(column)]
-
-        if count > 0: print(column, count)
-
-        reward = 10
-        if drop and count > 0:
-            reward = -(reward*count) * 4
-        if not drop and count > 0:
-            reward = (reward*count) * 2
-        if not drop and count == 0:
-            reward = -(reward*count) * 4
-
-        return reward
-
-    def compute_reward_index_scan(self, changed, drop, table, column):
-        # If action was a drop, create hypothetical
-        if drop and changed: self.db.create_index(table, column)
-
-        # Check amount of queries the index could be used in the last len(window)
-        total_count = 0
-        for q in self.workload_buffer:
-            total_use =  self.db.get_query_use(q, column)
-            if total_use > 0: break
-
-        # Drop hypothetical in case it was a drop
-        if drop and changed: self.db.drop_index(table, column)
-
-        reward = 0
-        if changed and drop:
-            if total_count == 0: # DROPA == 0 - BOM
-                reward = 5
-            else: # DROPA > 0 - RUIM
-                reward = -20
-        if changed and not drop:
-            if total_count == 0: # CRIA == 0 - RUIM
-                reward = -15
-            else: # CRIA > 0 - BOM
-                reward = 10
-        
         return reward
 
     def compute_reward_avg_cost_window(self):
@@ -185,7 +186,6 @@ class Environment():
         cost_diff = prev_cost - curr_cost
         if cost_diff > 0: 
             reward = 10
-            print(column, cost_diff)
         if cost_diff < 0: reward = -20
         else: reward = -1
 
@@ -250,7 +250,14 @@ class Environment():
             self.usage_history.append(self.get_usage_count(column))
 
             # Compute reward
-            reward = self.compute_reward_query_use(changed, drop, column)
+            # 1 - compute_reward_query_use(changed, drop, column)
+            # 2 - compute_reward_cost(query)
+            # 3 - compute_reward_cost_difference(column)
+            # 4 - compute_reward_avg_cost_window
+            if self.reward_func == 1: reward = self.compute_reward_query_use(changed, drop, column)
+            if self.reward_func == 2: reward = self.compute_reward_cost(query)
+            if self.reward_func == 3: reward = self.compute_reward_cost_difference(column)
+            if self.reward_func == 4: reward = self.compute_reward_avg_cost_window()
         
         # Get next state
         s_prime = self.get_state()
@@ -327,9 +334,9 @@ class Environment():
         # elapsed_time = end - start
         
         # Update window
-        # self.column_count.append(self.get_column_count(query))
         # self.index_count.append(self.get_index_count(query))
-        # self.cost_history.append(self.db.get_query_cost(query))
+        self.column_history.append(self.get_column_count(query))
+        self.cost_history.append(self.db.get_query_cost(query))
         self.workload_buffer.append(query)
         self.workload_buffer.pop(0)
 
@@ -363,9 +370,9 @@ class Environment():
         # elapsed_time = end - start
         
         # Update window
-        # self.column_count.append(self.get_column_count(query))
         # self.index_count.append(self.get_index_count(query))
-        # self.cost_history.append(self.db.get_query_cost(query))
+        self.column_history.append(self.get_column_count(query))
+        self.cost_history.append(self.db.get_query_cost(query))
         self.workload_buffer.append(query)
         self.workload_buffer.pop(0)
 
@@ -376,19 +383,6 @@ class Environment():
         - update_column_count(query)
         - get_column_count_window()
     """
-
-    # def get_column_count(self, query):
-    #     column_count = [0] * len(self.columns)
-    #     where_columns = self.get_where_columns(query)
-    #     for column in where_columns:
-    #         column_count[self.columns.index(column)] = 1
-    #     return column_count
-    
-    # def get_column_count_window(self):
-    #     total_count = [0] * len(self.columns)
-    #     for count in self.column_count[-self.window_size:]:
-    #         total_count = [sum(col) for col in zip(total_count, count)]
-    #     return total_count
 
     # def get_index_count(self, query):
     #     index_count = [0] * len(self.columns)
@@ -411,20 +405,6 @@ class Environment():
     #         total_count = [sum(col) for col in zip(total_count, count)]
     #     return total_count
 
-    def get_usage_count(self, column):
-        usage_count = np.zeros(len(self.columns))
-        for query in self.workload_buffer:
-            count = self.db.get_query_use(query, column)
-            usage_count[self.columns.index(column)] = count
-            if count > 0: break
-        return usage_count.tolist()
-
-    def get_usage_count_window(self):
-        total_count = np.zeros(len(self.columns))
-        for count in self.usage_history[-self.window_size:]:
-            total_count = [sum(col) for col in zip(total_count, count)]
-        return total_count
-
     def get_where_columns(self, query):
         columns = list()
         select_split = query.split("SELECT")
@@ -441,26 +421,53 @@ class Environment():
                         if str(column).upper() in str(where).upper():
                             columns.append(column)
         return list(set(columns))
+
+    def get_column_count(self, query):
+        column_count = np.zeros(len(self.columns))
+        where_columns = self.get_where_columns(query)
+        for column in where_columns:
+            column_count[self.columns.index(column)] = 1
+        return column_count.tolist()
     
+    def get_column_count_window(self):
+        total_count = [0] * len(self.columns)
+        for count in self.column_history[-self.window_size:]:
+            total_count = [sum(col) for col in zip(total_count, count)]
+        return total_count
+
+    def get_usage_count(self, column):
+        usage_count = np.zeros(len(self.columns))
+        for query in self.workload_buffer:
+            count = self.db.get_query_use(query, column)
+            usage_count[self.columns.index(column)] = count
+            if count > 0: break
+        return usage_count.tolist()
+
+    def get_usage_count_window(self):
+        total_count = np.zeros(len(self.columns))
+        for count in self.usage_history[-self.window_size:]:
+            total_count = [sum(col) for col in zip(total_count, count)]
+        return total_count
+
     """
         Initialization methods
     """
 
     def initialize_window(self, window_size):
-        # column_count = list()
         # index_count = list()
-        # cost_history = list()
-        workload_buffer = list()
         usage_history = list()
+        cost_history = list()
+        column_history = list()
+        workload_buffer = list()
 
         for query in random.choices(self.workload, k=window_size):
-            # cost_history.append(self.db.get_query_cost(query))
-            # column_count.append(self.get_column_count(query))
             # index_count.append(self.get_index_count(query))
+            cost_history.append(self.db.get_query_cost(query))
+            column_history.append(self.get_column_count(query))
             workload_buffer.append(query)
             usage_history.append(np.zeros(len(self.columns)).tolist())  # Blank init
 
-        return workload_buffer, usage_history
+        return workload_buffer, usage_history, cost_history, column_history
     
     def get_state(self):
         if self.allow_columns:
