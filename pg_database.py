@@ -104,7 +104,7 @@ class PG_Database():
                     command = "SELECT * FROM hypopg_drop_index(%s);" % (index[0])
                     self.execute(command, verbose)
         else:
-            if 'smartix_' in column:
+            if 'smartix_' in column or '_idx' in column:
                 command = ("DROP INDEX %s;" % (column))
             else:
                 command = ("DROP INDEX smartix_%s;" % (column))
@@ -129,9 +129,10 @@ class PG_Database():
         else:
             command = "SELECT t.relname AS table_name, i.relname AS index_name, a.attname AS column_name FROM pg_class t, pg_class i, pg_index ix, pg_indexes ixs, pg_attribute a WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND a.attnum = ANY(ix.indkey) AND ixs.schemaname = 'public' AND i.relname = ixs.indexname ORDER BY t.relname, i.relname;"
             output = self.execute_fetchall(command)
+            print(output)
             for index in output:
                 index_name = index[1]
-                if "smartix_" in index_name:
+                if "smartix_" in index_name or "_idx" in index_name:
                     print("Drop", index_name)
                     self.drop_index(None, index_name)
 
@@ -172,27 +173,29 @@ if __name__ == "__main__":
     #################################################
 
 
-    db = PG_Database()
+    db = PG_Database(hypo=False)
 
     # Get workload
-    with open('data/workload/tpch.sql', 'r') as f:
-        data = f.read()
-    workload = data.split('\n')
+    # with open('data/workload/tpch.sql', 'r') as f:
+    #     data = f.read()
+    # workload = data.split('\n')
 
-    db.create_index('lineitem', 'l_shipdate')
-    db.create_index('part', 'p_size')
-    db.create_index('part', 'p_container')
-    db.create_index('part', 'p_brand')
-    db.create_index('orders', 'o_orderdate')
-    db.create_index('customer', 'c_acctbal')
+    # db.create_index('lineitem', 'l_shipdate')
+    # db.create_index('part', 'p_size')
+    # db.create_index('part', 'p_container')
+    # db.create_index('part', 'p_brand')
+    # db.create_index('orders', 'o_orderdate')
+    # db.create_index('customer', 'c_acctbal')
 
-    # Count uses
-    for col in ['l_shipdate', 'p_size', 'p_container', 'p_brand', 'o_orderdate', 'c_acctbal']:
-        total_count = 0
-        for i, q in enumerate(workload):
-            count = db.get_query_use(q, col)
-            print(col, i, count)
-            total_count += count
-        print("Total count:", total_count, col)
+    # # Count uses
+    # for col in ['l_shipdate', 'p_size', 'p_container', 'p_brand', 'o_orderdate', 'c_acctbal']:
+    #     total_count = 0
+    #     for i, q in enumerate(workload):
+    #         count = db.get_query_use(q, col)
+    #         print(col, i, count)
+    #         total_count += count
+    #     print("Total count:", total_count, col)
+
+    db.reset_indexes()
 
     db.close_connection()
