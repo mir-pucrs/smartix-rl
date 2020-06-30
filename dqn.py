@@ -251,7 +251,6 @@ class Agent:
                 self.save_model()
                 
                 self.env.debug()
-                break
             
         # Close and finish
         self.env.close()
@@ -268,11 +267,13 @@ if __name__ == "__main__":
     # agent2.train()
 
     agent1 = Agent(env=Environment(reward_func=2), tag='func2')
-    agent2 = Agent(env=Environment(reward_func=3), tag='func3')
-    agent3 = Agent(env=Environment(window_size=40, reward_func=4), tag='func4_win40')
-    agent4 = Agent(env=Environment(window_size=80, reward_func=4), tag='func4_win80')
-
     agent1.train()
+
+    agent2 = Agent(env=Environment(reward_func=3), tag='func3')
     agent2.train()
+
+    agent3 = Agent(env=Environment(window_size=40, reward_func=4), tag='func4_win40')
     agent3.train()
+
+    agent4 = Agent(env=Environment(window_size=80, reward_func=4), tag='func4_win80')
     agent4.train()

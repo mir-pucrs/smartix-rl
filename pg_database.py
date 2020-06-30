@@ -19,7 +19,7 @@ class PG_Database():
             self.conn.autocommit = True
         except psycopg2.Error as err: 
             print("ERROR: {}".format(err))
-        
+
         # Create hypothetical indexes
         self.hypo = hypo
         # Analyze tables before getting cost
