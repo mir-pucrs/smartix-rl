@@ -524,6 +524,13 @@ if __name__ == "__main__":
 
     state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
 
-    for idx, value in enumerate(state):
-        if value == 1:
-            print(env.columns[idx])
+    # for idx, value in enumerate(state):
+    #     if value == 1:
+    #         print(env.columns[idx])
+
+    print(env.columns[12])
+    print(env.columns[20])
+    print(env.columns[22])
+    print(env.columns[23])
+    print(env.columns[28])
+    print(env.columns[39])
