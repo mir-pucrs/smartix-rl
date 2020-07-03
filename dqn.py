@@ -67,7 +67,7 @@ class Agent:
         # Epsilon
         self.epsilon = 1  # 100%
         self.epsilon_min = 0.01  # 1% 0.01
-        self.epsilon_decay = 0.05  # 1% 0.01
+        self.epsilon_decay = 0.01  # 1% 0.01
 
         # Log
         if output_path == None:
@@ -105,8 +105,8 @@ class Agent:
     """
         Model
     """
-    def load_model(self):
-        self.qnet.load_state_dict(torch.load(self.output_path+'model.pkl'))
+    def load_model(self, path):
+        self.qnet.load_state_dict(torch.load(path+'/model.pkl'))
 
     def save_model(self):
         torch.save(self.qnet.state_dict(), self.output_path+'model.pkl')
@@ -255,6 +255,82 @@ class Agent:
         # Close and finish
         self.env.close()
 
+    def test(self, model_path=''):
+        # Stats
+        states_history = list()
+        actions_history = list()
+        rewards_history = list()
+        episode_rewards = list()
+        transitions_history = list()
+        batch_loss = 0
+        episode_reward = 0
+        episode_num = 0
+
+        # IMPORTANT!!!!!!!!!!
+        self.load_model(model_path)
+        self.epsilon = 0.0
+
+        # Reset environment
+        print("Preparing environment...")
+        state = self.env.reset()
+        states_history.append(state.tolist())
+
+        # Start training
+        print("Started training...")
+        start = time.time()
+        for step in range(self.n_steps):
+
+            # Choose action
+            action = self.choose_action(state)
+
+            # Apply action
+            next_state, reward, done, _ = self.env.step(action)
+
+            # Update state
+            state = next_state
+
+            # Stats
+            episode_reward += reward
+            actions_history.append(action)
+            rewards_history.append(reward)
+            states_history.append(next_state.tolist())
+            transitions_history.append((state.tolist(), [action], [reward], next_state.tolist(), [done]))
+
+            # Save interval
+            if (step != 0 and step % self.target_update_interval == 0):
+
+                # Update step time
+                end = time.time()
+                elapsed = end - start
+                start = time.time()
+
+                # Print stats
+                print("episode: %2d \t acc_reward: %10.3f \t batch_loss: %8.8f \t elapsed: %6.2f \t epsilon: %2.4f" % (episode_num, episode_reward, batch_loss, float(elapsed), self.epsilon))
+                
+                # Save logs
+                log = "%2d\t%8.3f\t%8.8f\t%.2f\t%.4f\n" % (episode_num, episode_reward, batch_loss, elapsed, self.epsilon)
+
+                with open(self.output_path+'log.txt', 'a+') as f:
+                    f.write(log)
+                with open(self.output_path+'states_history.json', 'w+') as f:
+                    json.dump(states_history, f)
+                with open(self.output_path+'actions_history.json', 'w+') as f:
+                    json.dump(actions_history, f)
+                with open(self.output_path+'rewards_history.json', 'w+') as f:
+                    json.dump(rewards_history, f)
+                with open(self.output_path+'transitions_history.json', 'w+') as f:
+                    json.dump(transitions_history, f)
+
+                # Stats
+                episode_rewards.append(episode_reward)
+                episode_reward = 0
+                episode_num += 1
+                batch_loss = 0
+
+                self.env.debug()
+            
+        # Close and finish
+        self.env.close()
 
 if __name__ == "__main__":
     import os
@@ -275,5 +351,9 @@ if __name__ == "__main__":
     # agent2 = Agent(env=Environment(reward_func=3), tag='func3')
     # agent2.train()
 
-    agent1 = Agent(env=Environment(reward_func=2), tag='func2')
-    agent1.train()
+    # agent1 = Agent(env=Environment(reward_func=2), tag='func2')
+    # agent1.train()
+
+    agent_test = Agent(env=Environment(window_size=40, shift=True), tag='winsize40_test')
+    agent_test.test(model_path='results/0.0001_0.9_100000_10000_128_1024_0.01_0.01_winsize40 (BEST)')
+
