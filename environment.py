@@ -21,7 +21,7 @@ class Environment():
         # Set current workload
         self.shift = shift
         if self.shift:
-            self.shift_interval = 20
+            self.shift_interval = 10
             self.shift_count = 0
             self.shift_point = int(len(self.workload)/2)
             self.current_workload = self.workload[:self.shift_point]

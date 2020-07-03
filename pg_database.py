@@ -173,28 +173,28 @@ if __name__ == "__main__":
     #################################################
 
 
-    db = PG_Database(hypo=False)
+    db = PG_Database(hypo=True)
 
     # Get workload
-    # with open('data/workload/tpch.sql', 'r') as f:
-    #     data = f.read()
-    # workload = data.split('\n')
+    with open('data/workload/tpch_shift.sql', 'r') as f:
+        data = f.read()
+    workload = data.split('\n')
 
-    # db.create_index('lineitem', 'l_shipdate')
-    # db.create_index('part', 'p_size')
-    # db.create_index('part', 'p_container')
-    # db.create_index('part', 'p_brand')
-    # db.create_index('orders', 'o_orderdate')
-    # db.create_index('customer', 'c_acctbal')
+    db.create_index('lineitem', 'l_shipdate')
+    db.create_index('part', 'p_size')
+    db.create_index('part', 'p_container')
+    db.create_index('part', 'p_brand')
+    db.create_index('orders', 'o_orderdate')
+    db.create_index('customer', 'c_acctbal')
 
-    # # Count uses
-    # for col in ['l_shipdate', 'p_size', 'p_container', 'p_brand', 'o_orderdate', 'c_acctbal']:
-    #     total_count = 0
-    #     for i, q in enumerate(workload):
-    #         count = db.get_query_use(q, col)
-    #         print(col, i, count)
-    #         total_count += count
-    #     print("Total count:", total_count, col)
+    # Count uses
+    for col in ['l_shipdate', 'p_size', 'p_container', 'p_brand', 'o_orderdate', 'c_acctbal']:
+        total_count = 0
+        for i, q in enumerate(workload):
+            count = db.get_query_use(q, col)
+            print(col, i, count)
+            total_count += count
+        print("Total count:", total_count, col)
 
     db.reset_indexes()
 
