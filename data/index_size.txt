@@ -1,0 +1,11 @@
+Index configuration,Size
+rCOREIL,1725.4
+All indexes,2547.79
+SmartIX,429.89
+No indexes,282.62
+Random,1107.65
+EDB,521.84
+ITLCS,433.85
+POWA,531.03
+GADIS,438.4
+NoDBA,663.66
