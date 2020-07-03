@@ -1,6 +1,7 @@
 import os
 import json
 import matplotlib.pyplot as plt
+import pandas as pd
 from pprint import pprint
 
 # Plots
@@ -15,14 +16,16 @@ folder = 'results/0.0001_0.9_100000_10000_128_1024_0.01_0.01_winsize40 (BEST)'
 
 with open(folder+'/states_history.json', 'r') as f:
     states = json.load(f)
-    states = states[:50000]
+    states = states[:64000]
     optimal = list()
     total = list()
     for state in states:
         optimal.append(sum([state[12], state[20], state[22], state[23], state[28], state[39]]))
         total.append(sum(state[:45]))
+    optimal = pd.DataFrame(optimal).rolling(window=10).mean()
+    total = pd.DataFrame(total).rolling(window=10).mean()
     plt.title(folder)
-    plt.plot(optimal)
     plt.plot(total)
+    plt.plot(optimal)
     plt.axhline(6, color='r', linestyle='--')
     plt.show()
