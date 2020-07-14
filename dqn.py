@@ -354,5 +354,5 @@ if __name__ == "__main__":
     # agent1 = Agent(env=Environment(reward_func=2), tag='func2')
     # agent1.train()
 
-    agent_test = Agent(env=Environment(window_size=80, shift=True), tag='winsize40_test')
+    agent_test = Agent(env=Environment(window_size=80, shift=False), tag='test_10gb')
     agent_test.test(model_path='results/0.0001_0.9_100000_10000_128_1024_0.01_0.01_winsize80 (BEST)')
