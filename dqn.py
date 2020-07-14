@@ -37,7 +37,7 @@ class ReplayMemory():
 class QNet(nn.Module):
     def __init__(self, n_features, n_actions):
         super(QNet, self).__init__()
-
+        print(n_features, n_actions, "blaaaa")
         # Architecture
         self.nn = nn.Sequential(
             nn.Linear(n_features, 64),
@@ -354,5 +354,5 @@ if __name__ == "__main__":
     # agent1 = Agent(env=Environment(reward_func=2), tag='func2')
     # agent1.train()
 
-    agent_test = Agent(env=Environment(window_size=80, shift=False), tag='test_10gb')
-    agent_test.test(model_path='results/0.0001_0.9_100000_10000_128_1024_0.01_0.01_winsize80 (BEST)')
+    agent_test = Agent(env=Environment(window_size=40, shift=False), tag='winsize40_model40_test_10gb')
+    agent_test.test(model_path='results/0.0001_0.9_100000_10000_128_1024_0.01_0.01_winsize40 (BEST)')

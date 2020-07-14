@@ -494,6 +494,8 @@ if __name__ == "__main__":
     env = Environment(hypo=True)
     env.reset()
 
+    print(len(env.columns))
+
     # buffer = list()
     # window = 22
     # iterator = 0
@@ -522,15 +524,15 @@ if __name__ == "__main__":
 
     # env.close()
 
-    state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+    #state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
 
     # for idx, value in enumerate(state):
     #     if value == 1:
     #         print(env.columns[idx])
 
-    print(env.columns[12])
-    print(env.columns[20])
-    print(env.columns[22])
-    print(env.columns[23])
-    print(env.columns[28])
-    print(env.columns[39])
+    #print(env.columns[12])
+    #print(env.columns[20])
+    #print(env.columns[22])
+    #print(env.columns[23])
+    #print(env.columns[28])
+    #print(env.columns[39])
