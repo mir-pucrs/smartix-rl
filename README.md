@@ -57,7 +57,7 @@ mysql> EXIT;
 
 III. **Using  TPC-H Tools**
 
-3. Click at TPC-H source code, available at the [TPC website](http://www.tpc.org/tpc_documents_current_versions/current_specifications.asp).
+3. Click at TPC-H source code, available at the [TPC website](http://tpc.org/tpch/default5.asp).
 
 4. You have to fill in a register, and then they will send you a unique link by e-mail, so you can download and unzip the tools.
 
